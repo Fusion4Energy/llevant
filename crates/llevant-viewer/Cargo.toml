@@ -1,0 +1,59 @@
+[package]
+name = "llevant-viewer"
+description = "Interactive viewer of MCNP models: 3D views and 2D slices, built on llevant"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["mcnp", "geometry", "viewer", "egui", "neutronics"]
+categories = ["science", "visualization", "gui"]
+
+[lib]
+name = "llevant_viewer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "llevant-viewer"
+path = "src/main.rs"
+
+[dependencies]
+mimalloc.workspace = true
+# `mcnp-input`: FMESH cards read from inputs and written (the Mesh tool).
+aci-tallies-geom = { workspace = true, features = ["mcnp-input"] }
+bytemuck = { version = "1.25", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
+eframe = { version = "0.36", default-features = false, features = ["wgpu", "default_fonts", "x11", "wayland"] }
+egui = "0.36"
+egui-wgpu = "0.36"
+rfd = "0.17"
+llevant.workspace = true
+migjorn.workspace = true
+llevant-render.workspace = true
+llevant-scene = { workspace = true, features = ["serde", "tallies"] }
+png = "0.17"
+pollster = "0.4"
+llevant-gpu.workspace = true
+wgpu = "30.0.1"
+rayon.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log.workspace = true
+env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
+
+[target.'cfg(windows)'.dependencies]
+# The background pool's threads at a lower priority (tasks.rs).
+windows-sys = { version = "0.60", features = ["Win32_System_Threading"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+# Drives the whole application headlessly (lavapipe is enough): tests/app.rs.
+egui_kittest = { version = "0.36", features = ["eframe", "wgpu"] }

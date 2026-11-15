@@ -1,0 +1,15 @@
+[package]
+name = "mcnp-oracle"
+description = "Checks llevant against MCNP itself (needs a local MCNP install)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+llevant.workspace = true
+migjorn.workspace = true
+
+[lints]
+workspace = true

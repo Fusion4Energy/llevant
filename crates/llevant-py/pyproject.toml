@@ -1,0 +1,43 @@
+[build-system]
+requires = ["maturin>=1.5,<2"]
+build-backend = "maturin"
+
+[project]
+name = "llevant"
+# The version is the workspace's (Cargo.toml).
+dynamic = ["version"]
+description = "Fast, exact queries on MCNP geometry, from Python or the command line (python -m llevant)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "EUPL-1.2" }
+authors = [{ name = "Alvaro Cubi" }]
+keywords = ["mcnp", "geometry", "csg", "monte-carlo", "neutronics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = ["numpy>=1.21"]
+
+[project.urls]
+Homepage = "https://github.com/AlvaroCubi/llevant"
+Documentation = "https://github.com/AlvaroCubi/llevant/blob/main/docs/guide/python.md"
+Source = "https://github.com/AlvaroCubi/llevant"
+Issues = "https://github.com/AlvaroCubi/llevant/issues"
+Changelog = "https://github.com/AlvaroCubi/llevant/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+polars = ["polars>=1.0"]
+pandas = ["pandas>=1.5"]
+test = ["pytest", "mypy"]
+
+[tool.maturin]
+python-source = "python"
+module-name = "llevant._llevant"
+features = ["pyo3/extension-module"]

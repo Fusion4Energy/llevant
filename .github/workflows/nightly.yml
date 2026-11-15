@@ -1,0 +1,53 @@
+name: Nightly
+
+# Property tests with fresh random seeds and more cases than CI runs, and the
+# work-counter regression (job `work`). A property failure leaves the shrunk
+# seed in `*.proptest-regressions` (uploaded): commit that line with the fix
+# so CI replays it.
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  PROPTEST_CASES: "512"
+
+jobs:
+  properties:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --release -p llevant --test properties
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proptest-regressions
+          path: "**/*.proptest-regressions"
+
+  # Work counters (candidates, surface evaluations, crossings) of a fixed
+  # workload on the synthetic models against `tools/bench/work-baseline.json`.
+  # They are deterministic, so any difference is a change in what the search
+  # structures do: a change meant to move them commits the new baseline
+  # (`llevant-bench work <dir> --write tools/bench/work-baseline.json`).
+  # Windows, as the baseline: boxes of curved surfaces use the platform's
+  # sin and cos.
+  work:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - shell: bash
+        run: |
+          python tools/synthetic/gen_models.py untracked/synthetic
+          cargo run --release -p llevant-bench -- work untracked/synthetic \
+            --check tools/bench/work-baseline.json > work.json
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-counters
+          path: work.json

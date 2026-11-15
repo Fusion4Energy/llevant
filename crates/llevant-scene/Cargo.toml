@@ -1,0 +1,35 @@
+[package]
+name = "llevant-scene"
+description = "What frontends of llevant share about an MCNP model: cell rules, hiding, fields, material looks, the input cards, a cache of compiled models"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords = ["mcnp", "geometry", "meshtal", "mctal", "neutronics"]
+categories = ["science", "simulation"]
+
+[dependencies]
+aci-tallies = { workspace = true, optional = true }
+aci-tallies-geom.workspace = true
+blake3.workspace = true
+llevant.workspace = true
+log.workspace = true
+memchr.workspace = true
+memmap2.workspace = true
+migjorn.workspace = true
+rayon.workspace = true
+rustc-hash.workspace = true
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+# `Hiding` as in the viewer's view file.
+serde = ["dep:serde"]
+# Fields read from MCNP tally files (meshtal and MCTAL).
+tallies = ["dep:aci-tallies"]
+
+[lints]
+workspace = true

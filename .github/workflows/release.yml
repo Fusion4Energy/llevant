@@ -1,0 +1,171 @@
+name: Release
+
+# On a tag `v*`: the `llevant` command (with the GPU renderer and `llevant view`)
+# and `llevant-viewer` for Windows and Linux, and the abi3 Python wheels (with the
+# GPU and the viewer, for `python -m llevant view`), all built with the `dist`
+# profile, attached to a GitHub release; then the crates go to crates.io and the
+# wheels and the sdist to PyPI.
+#
+# Nothing is published unless every build passed and `check` agrees that the tag
+# is `v` + the workspace version and CHANGELOG.md has that version's section with
+# a date (`## 0.2.0 - 2026-12-01`). Run by hand (workflow_dispatch), it only builds.
+#
+# Publishing needs, once (CONTRIBUTING.md, "Releases"):
+# - a GitHub environment `release` (reviewers on it make each publish wait for an
+#   approval);
+# - the secret CARGO_REGISTRY_TOKEN in it: a crates.io token with publish-new and
+#   publish-update scopes;
+# - PyPI trusted publishing for project `llevant`: this repository, workflow
+#   `release.yml`, environment `release` (a pending publisher before the first
+#   release). No PyPI token is stored.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag, version and CHANGELOG agree
+        shell: bash
+        run: |
+          version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
+          echo "workspace version: $version"
+          [ -n "$version" ] || { echo "::error::no version in [workspace.package]"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            [ "$GITHUB_REF_NAME" = "v$version" ] ||
+              { echo "::error::tag $GITHUB_REF_NAME is not v$version"; exit 1; }
+            grep -qE "^## ${version//./\\.} - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md ||
+              { echo "::error::CHANGELOG.md has no dated section '## $version - YYYY-MM-DD'"; exit 1; }
+          fi
+
+  binaries:
+    needs: check
+    strategy:
+      matrix:
+        include:
+          - { os: windows-latest, name: windows-x86_64, exe: ".exe" }
+          - { os: ubuntu-latest, name: linux-x86_64, exe: "" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - if: runner.os == 'Linux'
+        uses: ./.github/actions/linux-deps
+      - uses: Swatinem/rust-cache@v2
+      - shell: bash
+        run: |
+          cargo build --profile dist -p llevant-cli -p llevant-viewer \
+            --features llevant-cli/gpu,llevant-cli/viewer
+          out="llevant-${GITHUB_REF_NAME}-${{ matrix.name }}"
+          mkdir "$out"
+          cp "target/dist/llevant${{ matrix.exe }}" "target/dist/llevant-viewer${{ matrix.exe }}" \
+            README.md LICENSE* CHANGELOG.md "$out"/
+          if [ "$RUNNER_OS" = Windows ]; then 7z a "$out.zip" "$out"; else tar czf "$out.tar.gz" "$out"; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.name }}
+          path: llevant-*.*
+
+  wheels:
+    needs: check
+    strategy:
+      matrix:
+        include:
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, manylinux: "off" }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, manylinux: "2_28" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: PyO3/maturin-action@v1
+        with:
+          working-directory: crates/llevant-py
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          # The viewer's system libraries, in the manylinux container.
+          before-script-linux: |
+            dnf install -y libxkbcommon-devel wayland-devel gtk3-devel openssl-devel pkgconf-pkg-config
+          args: --profile dist --out dist
+      - name: The wheel installs and answers
+        working-directory: crates/llevant-py
+        shell: bash
+        run: |
+          python -m pip install dist/*.whl pytest mypy
+          python -m pytest tests -x -q
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.target }}
+          path: crates/llevant-py/dist/*.whl
+
+  sdist:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          working-directory: crates/llevant-py
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: crates/llevant-py/dist/*.tar.gz
+
+  # The crates, in dependency order (llevant, -scene, -render, -gpu, -viewer,
+  # -cli): cargo packages and builds every one from its package before
+  # uploading any. A run that fails part-way leaves the uploaded ones published:
+  # publish the rest by hand (`cargo publish -p <crate>`), never the same version
+  # twice.
+  crates:
+    needs: [binaries, wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: ./.github/actions/linux-deps
+      - uses: Swatinem/rust-cache@v2
+      - env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --workspace --locked --exclude llevant-py --exclude llevant-bench --exclude mcnp-oracle
+
+  pypi:
+    needs: [binaries, wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { pattern: "wheel-*", path: dist, merge-multiple: true }
+      - uses: actions/download-artifact@v4
+        with: { name: sdist, path: dist }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    needs: [binaries, wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: assets, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: assets/*
+          generate_release_notes: true

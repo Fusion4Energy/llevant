@@ -1,0 +1,38 @@
+# cargo-deny: advisories, licences and sources of every dependency (CI `deny` job).
+
+[graph]
+all-features = true
+
+[advisories]
+# Unmaintained crates are reported for the whole graph; each exception names why.
+ignore = []
+
+[licenses]
+# llevant is EUPL-1.2; everything it links must be compatible with it.
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "ISC",
+    "Zlib",
+    "CC0-1.0",
+    "Unicode-3.0",
+    "EUPL-1.2",
+    "OFL-1.1",
+    # egui's default fonts (Ubuntu-Light, in the viewer).
+    "Ubuntu-font-1.0",
+    "Unlicense",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

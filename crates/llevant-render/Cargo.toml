@@ -1,0 +1,26 @@
+[package]
+name = "llevant-render"
+description = "Images of llevant's MCNP models: colours, colour scales, fields over the geometry, physically based shading"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords = ["mcnp", "geometry", "rendering", "pbr", "neutronics"]
+categories = ["science", "rendering", "visualization"]
+
+[dependencies]
+ab_glyph = "0.2"
+llevant.workspace = true
+llevant-scene.workspace = true
+png = "0.17"
+rayon.workspace = true
+
+[dev-dependencies]
+aci-tallies-geom.workspace = true
+
+[lints]
+workspace = true

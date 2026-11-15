@@ -1,0 +1,37 @@
+[package]
+name = "llevant"
+description = "Fast MCNP constructive solid geometry engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords = ["mcnp", "geometry", "csg", "monte-carlo", "neutronics"]
+categories = ["science", "simulation", "graphics"]
+
+[features]
+# Work counters (`Model::work_points`, `Model::work_lines`) for benchmarks.
+bench = []
+
+[dependencies]
+bitcode = { version = "0.6.9", features = ["serde"] }
+blake3 = { workspace = true, features = ["rayon"] }
+log.workspace = true
+migjorn.workspace = true
+# Not used directly: pins migjorn's own dependency (see the workspace).
+migjorn-syntax.workspace = true
+rayon.workspace = true
+rustc-hash.workspace = true
+serde = { version = "1.0.229", features = ["derive"] }
+
+[build-dependencies]
+blake3.workspace = true
+
+[dev-dependencies]
+proptest = "1"
+
+[lints]
+workspace = true

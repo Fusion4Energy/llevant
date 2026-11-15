@@ -1,0 +1,32 @@
+[package]
+name = "llevant-py"
+description = "Python bindings of llevant: models loaded once and queried from scripts and notebooks"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+# Shipped as the Python wheel (PyPI `llevant`), not on crates.io.
+publish = false
+
+[lib]
+name = "_llevant"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Local-dynamic TLS: the module is loaded with dlopen (docs/decisions/0009-mimalloc.md).
+mimalloc = { workspace = true, features = ["local_dynamic_tls"] }
+aci-tallies-geom.workspace = true
+llevant.workspace = true
+llevant-render.workspace = true
+llevant-scene = { workspace = true, features = ["tallies"] }
+llevant-cli = { workspace = true, features = ["gpu", "viewer"] }
+llevant-gpu.workspace = true
+numpy = "0.25"
+pyo3 = { version = "0.25", features = ["abi3-py39", "extension-module", "generate-import-lib"] }
+rayon.workspace = true
+
+[lints]
+workspace = true

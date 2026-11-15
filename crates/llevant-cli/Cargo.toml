@@ -1,0 +1,45 @@
+[package]
+name = "llevant-cli"
+description = "Command-line tool for the llevant MCNP geometry engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords = ["mcnp", "geometry", "cli", "monte-carlo", "neutronics"]
+categories = ["science", "command-line-utilities", "visualization"]
+
+[lib]
+name = "llevant_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "llevant"
+path = "src/main.rs"
+
+[dependencies]
+mimalloc.workspace = true
+clap = { version = "4.5", features = ["derive"] }
+llevant.workspace = true
+llevant-render.workspace = true
+llevant-scene.workspace = true
+llevant-gpu = { workspace = true, optional = true }
+llevant-viewer = { workspace = true, optional = true }
+rayon.workspace = true
+serde_json = "1"
+env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
+
+[features]
+default = ["tallies"]
+# `--field` reads MCNP tally files (meshtal and MCTAL).
+tallies = ["llevant-scene/tallies"]
+# `render --gpu`: needs wgpu (slow to build).
+gpu = ["dep:llevant-gpu"]
+# `view`: the interactive viewer window (egui and winit, slow to build).
+viewer = ["dep:llevant-viewer"]
+
+[lints]
+workspace = true

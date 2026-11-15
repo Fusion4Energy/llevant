@@ -1,0 +1,6 @@
+# LF everywhere, also in Windows checkouts: tests compare text that
+# include_str! reads (READMEs, goldens, models, shaders).
+* text=auto eol=lf
+
+# Third-party file, kept byte for byte.
+crates/llevant-viewer/assets/LICENSE-IBM-Plex.txt -text

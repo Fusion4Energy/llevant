@@ -1,0 +1,242 @@
+{
+  "bricks": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 33644,
+          "midpoints": 95725,
+          "surface_evals": 417385,
+          "surfaces_crossed": 51989,
+          "visits": 2000
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 40000,
+          "midpoints": 0,
+          "surface_evals": 240000,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        }
+      ]
+    }
+  },
+  "core": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 6846,
+          "midpoints": 13619,
+          "surface_evals": 46071,
+          "surfaces_crossed": 19076,
+          "visits": 2000
+        },
+        {
+          "candidates": 1000,
+          "midpoints": 0,
+          "surface_evals": 0,
+          "surfaces_crossed": 0,
+          "visits": 1000
+        },
+        {
+          "candidates": 12372,
+          "midpoints": 12754,
+          "surface_evals": 48460,
+          "surfaces_crossed": 23892,
+          "visits": 6612
+        },
+        {
+          "candidates": 5760,
+          "midpoints": 0,
+          "surface_evals": 0,
+          "surfaces_crossed": 0,
+          "visits": 5760
+        },
+        {
+          "candidates": 216778,
+          "midpoints": 615524,
+          "surface_evals": 836904,
+          "surfaces_crossed": 157362,
+          "visits": 88792
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 63551,
+          "midpoints": 0,
+          "surface_evals": 227397,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        },
+        {
+          "candidates": 6583,
+          "midpoints": 0,
+          "surface_evals": 0,
+          "surfaces_crossed": 0,
+          "visits": 6583
+        },
+        {
+          "candidates": 12238,
+          "midpoints": 0,
+          "surface_evals": 46168,
+          "surfaces_crossed": 0,
+          "visits": 6583
+        },
+        {
+          "candidates": 5655,
+          "midpoints": 0,
+          "surface_evals": 0,
+          "surfaces_crossed": 0,
+          "visits": 5655
+        },
+        {
+          "candidates": 11484,
+          "midpoints": 0,
+          "surface_evals": 12856,
+          "surfaces_crossed": 0,
+          "visits": 5655
+        }
+      ]
+    }
+  },
+  "sparse": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 3051,
+          "midpoints": 5199,
+          "surface_evals": 4340,
+          "surfaces_crossed": 9548,
+          "visits": 2000
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 20855,
+          "midpoints": 0,
+          "surface_evals": 16325,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        }
+      ]
+    }
+  },
+  "tokamak": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 41870,
+          "midpoints": 113072,
+          "surface_evals": 369651,
+          "surfaces_crossed": 39788,
+          "visits": 2000
+        },
+        {
+          "candidates": 48743,
+          "midpoints": 121967,
+          "surface_evals": 205305,
+          "surfaces_crossed": 56880,
+          "visits": 8340
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 90602,
+          "midpoints": 0,
+          "surface_evals": 357807,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        },
+        {
+          "candidates": 7472,
+          "midpoints": 0,
+          "surface_evals": 14944,
+          "surfaces_crossed": 0,
+          "visits": 7472
+        }
+      ]
+    }
+  },
+  "tokamak-coarse": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 95388,
+          "midpoints": 259678,
+          "surface_evals": 429967,
+          "surfaces_crossed": 58412,
+          "visits": 2000
+        },
+        {
+          "candidates": 63002,
+          "midpoints": 136946,
+          "surface_evals": 234928,
+          "surfaces_crossed": 85001,
+          "visits": 22211
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 132879,
+          "midpoints": 0,
+          "surface_evals": 213897,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        },
+        {
+          "candidates": 7411,
+          "midpoints": 0,
+          "surface_evals": 14822,
+          "surfaces_crossed": 0,
+          "visits": 7411
+        }
+      ]
+    }
+  },
+  "tori": {
+    "lines": {
+      "items": 2000,
+      "levels": [
+        {
+          "candidates": 70963,
+          "midpoints": 176457,
+          "surface_evals": 327826,
+          "surfaces_crossed": 26013,
+          "visits": 2000
+        }
+      ]
+    },
+    "points": {
+      "items": 20000,
+      "levels": [
+        {
+          "candidates": 262698,
+          "midpoints": 0,
+          "surface_evals": 453145,
+          "surfaces_crossed": 0,
+          "visits": 20000
+        }
+      ]
+    }
+  }
+}

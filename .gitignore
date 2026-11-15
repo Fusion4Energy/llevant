@@ -1,0 +1,7 @@
+/target
+/untracked
+__pycache__/
+*.so
+*.pyd
+*.pdb
+CLAUDE.local.md

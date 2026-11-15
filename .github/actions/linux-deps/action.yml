@@ -1,0 +1,10 @@
+name: Linux build dependencies
+description: System libraries the viewer (eframe, winit, rfd) needs to build on Linux.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxkbcommon-dev libwayland-dev libgtk-3-dev libxcb-render0-dev \
+          libxcb-shape0-dev libxcb-xfixes0-dev libssl-dev pkg-config
