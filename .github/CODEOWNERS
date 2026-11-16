@@ -1,0 +1,4 @@
+# Every change to llevant is reviewed by its maintainer. With "Require review from Code
+# Owners" in the branch protection of main, a pull request merges only with this
+# approval (docs/CONTRIBUTING.md, "Changes").
+* @AlvaroCubi

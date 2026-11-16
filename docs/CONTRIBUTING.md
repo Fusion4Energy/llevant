@@ -117,7 +117,9 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 ## Changes
 
 - Branch from `main`; one pull request per change, small enough to review in one sitting.
-  `main` is always releasable: CI must be green before merging.
+  `main` is always releasable: CI must be green before merging. `main` is protected:
+  changes reach it through a pull request with the maintainer's approval (the code
+  owner, `.github/CODEOWNERS`); only the maintainer may push to it directly.
 - Commit messages: a summary line in the imperative, under 72 characters, naming what
   changes for a user or a caller (`Trace lines in windows of doubling length`, not
   `Improvements`); a body when the reason is not obvious, with measurements when the
@@ -125,9 +127,6 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 - Before pushing: `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D
   warnings`, `cargo test --release`. Changes to the GPU renderer or the viewer also run
   `cargo test --release -p llevant-gpu -p llevant-viewer`.
-- Add an entry to [`CHANGELOG.md`](https://github.com/Fusion4Energy/llevant/blob/main/CHANGELOG.md) under the top section ("Unreleased", or
-  the version being prepared) for anything a user of the command, the library, Python or
-  the viewer would notice.
 
 ## What a change must keep
 
@@ -149,23 +148,26 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 
 ## Releases
 
-A tag `vX.Y.Z` on `main` runs `.github/workflows/release.yml`: the binaries, the wheels
-and the sdist are built, then the crates go to crates.io, the wheels and the sdist to
-PyPI, and everything to a GitHub release. Versions are never published twice, so check
-before tagging:
+The version lives in `Cargo.toml`, and a version on `main` with no tag yet is released
+(`.github/workflows/release.yml`): nobody types a tag. On every push to `main` the
+workflow's `check` job compares the version with the tags; when it is new, the binaries,
+the wheels and the sdist are built and the wheels tested, then, after an approval on the
+`release` environment, the crates go to crates.io, the wheels and the sdist to PyPI, and
+a GitHub release (notes generated from the commits, the binaries attached) creates the
+tag `vX.Y.Z` on that commit. Versions are never published twice, so:
 
-1. `version` in `[workspace.package]` (`Cargo.toml`) is X.Y.Z, and so are the workspace's
-   own crates in `[workspace.dependencies]`; the Python package takes the same version.
-2. `CHANGELOG.md`: the "Unreleased" section becomes `## X.Y.Z - YYYY-MM-DD`. The workflow
-   refuses a tag without that dated section, or that differs from the version.
-3. CI is green on the commit, the Release workflow run by hand on it (Actions, "Release",
-   "Run workflow": it builds and tests everything and publishes nothing) is green, and
-   these pass locally (nothing is uploaded):
+1. These pass locally (nothing is uploaded):
    ```sh
    cargo publish --workspace --dry-run --exclude llevant-py --exclude llevant-bench --exclude mcnp-oracle
    cd crates/llevant-py && maturin build --release && maturin sdist   # then `twine check` them
    ```
-4. `git tag vX.Y.Z && git push origin vX.Y.Z`.
+2. `tools/release.sh X.Y.Z` on a clean `main`: it sets `version` in `[workspace.package]`
+   and the pins of the workspace's own crates in `[workspace.dependencies]` (the Python
+   package takes the same version), updates `Cargo.lock` and commits. It refuses a
+   version already released.
+3. Push. Approve the release's publishing jobs once CI is green on the commit.
+
+Run by hand (Actions, "Release", "Run workflow"), the workflow only builds and tests.
 
 The parser (migjorn and migjorn-syntax) is pinned exactly in `Cargo.toml`: what it
 parses is part of the engine build that keys the cache of compiled models, so a new
@@ -174,7 +176,8 @@ migjorn is taken by raising both pins, and reaches users with a new llevant rele
 Set up once, in the repository settings and on the two registries:
 
 - a GitHub environment `release`; required reviewers on it make the crates.io and PyPI
-  jobs wait for an approval after the builds;
+  jobs wait for an approval after the builds (without them, pushing a new version
+  publishes it straight away);
 - in that environment, the secret `CARGO_REGISTRY_TOKEN`: a crates.io API token with the
   `publish-new` and `publish-update` scopes (once the crates exist, it can be narrowed to
   `llevant*` or replaced by crates.io trusted publishing);

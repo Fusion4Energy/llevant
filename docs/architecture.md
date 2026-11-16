@@ -123,6 +123,7 @@ Planned, not built yet:
 | `tools/bench` | `llevant-bench`: benchmarks, checks against brute force and of the GPU against the CPU, work counters, the benchmark report | no |
 | `tools/mcnp-oracle` | Checks llevant against MCNP itself; cuts sub-models | no (needs MCNP) |
 | `tools/synthetic` | Generators of benchmark models of other shapes | — |
+| `tools/release.sh` | Raises the version for a release: workspace version, pins, `Cargo.lock` (`docs/CONTRIBUTING.md`, "Releases") | — |
 
 migjorn, the MCNP parser, and aci-tallies (mesh geometry and the meshtal, MCTAL and
 D1SUNED cell-under-voxel readers) come from crates.io. The tally files the tests read

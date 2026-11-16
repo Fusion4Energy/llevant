@@ -1,14 +1,15 @@
 name: Release
 
-# On a tag `v*`: the `llevant` command (with the GPU renderer and `llevant view`)
-# and `llevant-viewer` for Windows and Linux, and the abi3 Python wheels (with the
-# GPU and the viewer, for `python -m llevant view`), all built with the `dist`
-# profile, attached to a GitHub release; then the crates go to crates.io and the
-# wheels and the sdist to PyPI.
-#
-# Nothing is published unless every build passed and `check` agrees that the tag
-# is `v` + the workspace version and CHANGELOG.md has that version's section with
-# a date (`## 0.2.0 - 2026-12-01`). Run by hand (workflow_dispatch), it only builds.
+# A push to main whose Cargo.toml version has no tag yet is a release (the version
+# is raised with `tools/release.sh X.Y.Z`; nobody types a tag). This builds the
+# `llevant` command (with the GPU renderer and `llevant view`) and `llevant-viewer`
+# for Windows and Linux, and the abi3 Python wheels (with the GPU and the viewer,
+# for `python -m llevant view`), all with the `dist` profile, and tests the wheels;
+# then, after an approval on the `release` environment, the crates go to crates.io
+# and the wheels and the sdist to PyPI, and the GitHub release (notes generated
+# from the commits) creates the tag `vX.Y.Z` on the commit built. Nothing is
+# published unless every build passed. Pushes that keep a released version do
+# nothing; run by hand (Actions, "Release", "Run workflow"), it only builds.
 #
 # Publishing needs, once (docs/CONTRIBUTING.md, "Releases"):
 # - a GitHub environment `release` (reviewers on it make each publish wait for an
@@ -20,9 +21,16 @@ name: Release
 #   release). No PyPI token is stored.
 
 on:
+  # Every push to main: `check` takes a few seconds and stops there unless the
+  # version is new.
   push:
-    tags: ["v*"]
+    branches: [main]
   workflow_dispatch:
+
+# One release at a time; a release in progress is never cancelled.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -31,26 +39,39 @@ permissions:
   contents: read
 
 jobs:
+  # The version, and whether this run releases it: a push to main of a version
+  # with no tag yet.
   check:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release: ${{ steps.version.outputs.release }}
     steps:
       - uses: actions/checkout@v4
-      - name: Tag, version and CHANGELOG agree
+      - name: Version from Cargo.toml, and whether it is new
+        id: version
         shell: bash
         run: |
           version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
-          echo "workspace version: $version"
           [ -n "$version" ] || { echo "::error::no version in [workspace.package]"; exit 1; }
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            [ "$GITHUB_REF_NAME" = "v$version" ] ||
-              { echo "::error::tag $GITHUB_REF_NAME is not v$version"; exit 1; }
-            grep -qE "^## ${version//./\\.} - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md ||
-              { echo "::error::CHANGELOG.md has no dated section '## $version - YYYY-MM-DD'"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -n "$(git ls-remote --tags origin "refs/tags/v$version")" ]; then
+            echo "v$version is already released"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/main ]; then
+            echo "::notice::releasing v$version"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "v$version is not released yet; a run by hand only builds it"
+            echo "release=false" >> "$GITHUB_OUTPUT"
           fi
 
   binaries-windows:
     needs: check
+    if: needs.check.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -59,9 +80,9 @@ jobs:
         run: |
           cargo build --profile dist -p llevant-cli -p llevant-viewer \
             --features llevant-cli/gpu,llevant-cli/viewer
-          out="llevant-${GITHUB_REF_NAME}-windows-x86_64"
+          out="llevant-v${VERSION}-windows-x86_64"
           mkdir "$out"
-          cp target/dist/llevant.exe target/dist/llevant-viewer.exe README.md LICENSE* CHANGELOG.md "$out"/
+          cp target/dist/llevant.exe target/dist/llevant-viewer.exe README.md LICENSE* "$out"/
           7z a "$out.zip" "$out"
       - uses: actions/upload-artifact@v4
         with:
@@ -73,8 +94,11 @@ jobs:
   # only on systems as recent as the runner.
   binaries-linux:
     needs: check
+    if: needs.check.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: The viewer's system libraries
@@ -98,9 +122,9 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          out="llevant-${GITHUB_REF_NAME}-linux-x86_64"
+          out="llevant-v${VERSION}-linux-x86_64"
           mkdir "$out"
-          cp target/dist/llevant target/dist/llevant-viewer README.md LICENSE* CHANGELOG.md "$out"/
+          cp target/dist/llevant target/dist/llevant-viewer README.md LICENSE* "$out"/
           tar czf "$out.tar.gz" "$out"
       - uses: actions/upload-artifact@v4
         with:
@@ -109,6 +133,7 @@ jobs:
 
   wheels:
     needs: check
+    if: needs.check.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
         include:
@@ -141,6 +166,7 @@ jobs:
 
   sdist:
     needs: check
+    if: needs.check.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -160,8 +186,8 @@ jobs:
   # publish the rest by hand (`cargo publish -p <crate>`), never the same version
   # twice.
   crates:
-    needs: [binaries-windows, binaries-linux, wheels, sdist]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, binaries-windows, binaries-linux, wheels, sdist]
+    if: needs.check.outputs.release == 'true'
     runs-on: ubuntu-latest
     environment: release
     steps:
@@ -174,8 +200,8 @@ jobs:
         run: cargo publish --workspace --locked --exclude llevant-py --exclude llevant-bench --exclude mcnp-oracle
 
   pypi:
-    needs: [binaries-windows, binaries-linux, wheels, sdist]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, binaries-windows, binaries-linux, wheels, sdist]
+    if: needs.check.outputs.release == 'true'
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -187,9 +213,11 @@ jobs:
         with: { name: sdist, path: dist }
       - uses: pypa/gh-action-pypi-publish@release/v1
 
+  # The GitHub release, after both registries: it creates the tag vX.Y.Z on the
+  # commit that was built, so a tag means the version is out.
   release:
-    needs: [binaries-windows, binaries-linux, wheels, sdist]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, crates, pypi]
+    if: needs.check.outputs.release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -198,5 +226,7 @@ jobs:
         with: { path: assets, merge-multiple: true }
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.check.outputs.version }}
+          target_commitish: ${{ github.sha }}
           files: assets/*
           generate_release_notes: true

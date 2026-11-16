@@ -30,7 +30,7 @@ Homepage = "https://github.com/Fusion4Energy/llevant"
 Documentation = "https://fusion4energy.github.io/llevant/"
 Source = "https://github.com/Fusion4Energy/llevant"
 Issues = "https://github.com/Fusion4Energy/llevant/issues"
-Changelog = "https://github.com/Fusion4Energy/llevant/blob/main/CHANGELOG.md"
+Releases = "https://github.com/Fusion4Energy/llevant/releases"
 
 [project.optional-dependencies]
 polars = ["polars>=1.0"]

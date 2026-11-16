@@ -36,7 +36,6 @@ nav = [
     "reference/viewer.md",
     "reference/supported-input.md",
     "mcnp-behaviour.md",
-    "changelog.md",
   ] },
   { "Development" = [
     "CONTRIBUTING.md",

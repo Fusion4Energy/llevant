@@ -7,10 +7,10 @@ name: Docs
 
 on:
   pull_request:
-    paths: ["docs/**", "zensical.toml", "CHANGELOG.md", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
+    paths: ["docs/**", "zensical.toml", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
   push:
     branches: [main]
-    paths: ["docs/**", "zensical.toml", "CHANGELOG.md", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
+    paths: ["docs/**", "zensical.toml", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
   workflow_dispatch:
 
 permissions:

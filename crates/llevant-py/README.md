@@ -59,6 +59,6 @@ python -m llevant view model.mcnp
   tallies, comparing models
 - [Python guide](https://fusion4energy.github.io/llevant/guide/python/) and
   [API reference](https://fusion4energy.github.io/llevant/reference/python-api/)
-- [Source, issues and changelog](https://github.com/Fusion4Energy/llevant)
+- [Source, issues and releases](https://github.com/Fusion4Energy/llevant)
 
 Licence: EUPL-1.2.
