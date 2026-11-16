@@ -719,7 +719,8 @@ impl Model {
     /// `hide_materials` hide more, as in `first_hit`, and so do `hide_rules`
     /// (rules of cells, `"u 20040 & m 5"`). `isolate` (a rule) shows only
     /// its cells, what they hold and the cells holding them. `gpu=True` renders on the GPU (faster,
-    /// approximate at edges); the model is uploaded once.
+    /// approximate at edges); the model is uploaded once. Not on WARP, Windows'
+    /// software adapter: an error there.
     ///
     /// `colour`: `cell`, `material`, `universe` or `realistic` (what the
     /// materials look like, see `materials()`; lit physically, the others

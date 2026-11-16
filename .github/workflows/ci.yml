@@ -58,14 +58,14 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - env:
           WGPU_BACKEND: vulkan
+          LLEVANT_GPU_REQUIRED: "1"
         run: cargo test --release -p llevant-gpu -p llevant-viewer
 
-  # The GPU renderer on D3D12 with WARP, Windows' software adapter: what a
-  # Windows machine without a Vulkan driver uses, and where the shader compiler
-  # (DXC, linked in; FXC cannot compile the renderer) matters. Only `tiles`:
-  # it compiles the whole renderer and checks its hits, while the other GPU
-  # tests take tens of CPU-minutes on a software adapter (WARP on 4 cores:
-  # well over half an hour each); the `gpu` job runs them all on Vulkan.
+  # The renderer's shader on D3D12, compiled by DXC (linked in; Windows' own
+  # FXC cannot compile it), on WARP, Windows' software adapter: the shader
+  # compiles there but renders never finish, so llevant refuses WARP
+  # (`is_warp`) unless `WGPU_ADAPTER_NAME` names it, and this job only uploads
+  # models (every pipeline compiled, nothing rendered). Correctness: `gpu`.
   gpu-windows:
     runs-on: windows-latest
     timeout-minutes: 30
@@ -75,7 +75,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - env:
           WGPU_BACKEND: dx12
-        run: cargo test --release -p llevant-gpu --lib --test tiles
+          WGPU_ADAPTER_NAME: Microsoft Basic Render Driver
+          LLEVANT_GPU_REQUIRED: "1"
+        run: cargo test --release -p llevant-gpu --test upload -- models_share_the_shader --exact
 
   python:
     runs-on: ubuntu-latest

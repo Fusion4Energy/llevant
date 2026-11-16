@@ -73,7 +73,9 @@ cargo install llevant-viewer                      # `llevant-viewer`
 
 On Windows, the GPU renderer and the viewer need Visual Studio 2022 17.11 or later (its
 C++ build tools), and the build downloads Microsoft's DirectX shader compiler (DXC) from
-GitHub once.
+GitHub once. Without a GPU driver (virtual machines, remote desktops), Windows offers only
+its software adapter (WARP), which llevant does not use for now: `--gpu` and `gpu=True`
+report an error, and the viewer traces on the CPU.
 
 On Linux, the viewer needs some system libraries to build. On Debian or Ubuntu:
 

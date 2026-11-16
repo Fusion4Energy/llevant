@@ -17,10 +17,14 @@ use crate::{Gpu, GpuModel, Status, NONE};
 /// (with a note on stderr) when there is no adapter, and the test skips.
 /// Opening devices at once on several test threads can hang a Vulkan driver
 /// (and costs a second or more each on lavapipe), so tests share this one.
+/// With `LLEVANT_GPU_REQUIRED` set (CI), no adapter is a failure instead.
 pub fn shared_gpu() -> Option<std::sync::Arc<Gpu>> {
     static GPU: std::sync::OnceLock<Option<std::sync::Arc<Gpu>>> = std::sync::OnceLock::new();
     GPU.get_or_init(|| match Gpu::new() {
         Ok(g) => Some(std::sync::Arc::new(g)),
+        Err(e) if std::env::var_os("LLEVANT_GPU_REQUIRED").is_some() => {
+            panic!("no GPU and LLEVANT_GPU_REQUIRED is set: {e}")
+        }
         Err(e) => {
             eprintln!("no GPU, GPU tests skipped: {e}");
             None

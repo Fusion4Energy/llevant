@@ -19,7 +19,9 @@ Tests and lints:
 cargo test --release                  # engine, scene, render, CLI: unit, MCNP golden, property, CLI tests
 cargo clippy --workspace --all-targets -- -D warnings && cargo fmt --all
 cargo test --release -p llevant-gpu -p llevant-viewer   # GPU renderer and viewer (skip without
-                                      # a GPU adapter; Mesa's lavapipe is enough, and slow)
+                                      # a GPU adapter, or fail with LLEVANT_GPU_REQUIRED=1 as in
+                                      # CI; Mesa's lavapipe is enough, and slow; WARP only
+                                      # when named by WGPU_ADAPTER_NAME)
 LLEVANT_BIG_MODEL=<model> cargo test --release -- --ignored   # checks on a large model
 PROPTEST_RNG_SEED=20261031 cargo test --release   # property tests with CI's seed
                                       # (without it, every run draws new cases)

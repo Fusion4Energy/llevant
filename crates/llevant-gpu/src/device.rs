@@ -23,7 +23,8 @@ impl Gpu {
     }
 
     /// The highest-performance adapter, with its own limits (large storage
-    /// buffers). `WGPU_BACKEND` and `WGPU_ADAPTER_NAME` select one.
+    /// buffers). `WGPU_BACKEND` and `WGPU_ADAPTER_NAME` select one. Not
+    /// WARP unless named ([`is_warp`]).
     pub fn new() -> Result<Gpu> {
         // Vulkan or Metal unless `WGPU_BACKEND` says otherwise: left to
         // choose, wgpu now and then takes the D3D12 adapter (when several
@@ -54,8 +55,16 @@ impl Gpu {
     /// those of `features` it has. A device of its own has a queue of its
     /// own: long renders there do not hold up another device's work (a
     /// window's frames), as the driver shares the GPU between them.
+    /// Not WARP (D3D12's software adapter) unless `WGPU_ADAPTER_NAME` is
+    /// set ([`is_warp`]).
     pub fn from_adapter(adapter: &wgpu::Adapter, features: wgpu::Features) -> Result<Gpu> {
         let info = adapter.get_info();
+        if is_warp(&info) && std::env::var_os("WGPU_ADAPTER_NAME").is_none() {
+            return Err(Error::Gpu(format!(
+                "{} (D3D12's software adapter) is not supported: renders on it do not finish",
+                info.name
+            )));
+        }
         let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
             label: Some("llevant"),
             required_limits: adapter.limits(),
@@ -69,6 +78,16 @@ impl Gpu {
             info,
         })
     }
+}
+
+/// WARP, the adapter Windows offers without a GPU driver (virtual machines,
+/// remote desktops, CI). The renderer's shader compiles there (DXC) but its
+/// renders never finish (seen on GitHub's Windows runners; the cause is not
+/// known), so [`Gpu::from_adapter`] refuses it unless `WGPU_ADAPTER_NAME`
+/// asks for an adapter by name; the CI job `gpu-windows` does, to check
+/// that the shader compiles. Software Vulkan (lavapipe) is fine.
+pub fn is_warp(info: &wgpu::AdapterInfo) -> bool {
+    info.backend == wgpu::Backend::Dx12 && info.device_type == wgpu::DeviceType::Cpu
 }
 
 /// How much to prefer an adapter (lower first): its kind, then its

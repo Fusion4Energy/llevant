@@ -313,7 +313,10 @@ model's lean export (`Model::export_lean`: the programs and octree arrays are ha
 out from the model itself instead of copied): the viewer's host memory peaks at
 5.3 GB instead of 10.4 GB for the reference model, and GPU memory at 0.13 GB over
 what the model takes instead of 1.45 GB. Running out of GPU memory there is an
-error (`push_error_scope`), so callers trace on the CPU instead.
+error (`push_error_scope`), so callers trace on the CPU instead. WARP, Windows' software
+adapter, is refused unless `WGPU_ADAPTER_NAME` names it (`is_warp`): the shader compiles
+there with DXC, but renders never finish (seen on GitHub's runners, cause unknown), and
+the viewer then traces on the CPU.
 
 The crate's modules follow that path: `device` (the device and adapter, reading
 buffers back), `pack` (the upload), `visibility`, `job` (parameters, jobs traced a slice
