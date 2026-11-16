@@ -43,14 +43,18 @@ from ._llevant import (
     threads,
 )
 
-def view(model, *, state=None, backend=None):
+def view(model=None, *, state=None, backend=None):
     """Open the interactive viewer on a model; returns when the window closes.
 
-    Runs in this process (no extra executable). Call it from a script, not a
-    notebook cell: it blocks. `state`: view file to open and save to (default
-    ``<model>.view.json``); `backend`: ``"auto"``, ``"gpu"`` or ``"cpu"``.
+    Without `model`, the viewer's start screen, to open one from. Runs in this
+    process (no extra executable). Call it from a script, not a notebook cell:
+    it blocks. `state`: view file to open and save to (default
+    ``<model>.view.json``; needs `model`); `backend`: ``"auto"``, ``"gpu"`` or
+    ``"cpu"``.
     """
-    argv = ["llevant", "view", str(model)]
+    argv = ["llevant", "view"]
+    if model is not None:
+        argv.append(str(model))
     if state is not None:
         argv += ["--state", str(state)]
     if backend is not None:

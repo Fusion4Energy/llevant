@@ -13,6 +13,7 @@ llevant-viewer model.mcnp
 llevant-viewer model.mcnp --state view.json       # open at a saved view
 llevant-viewer model.mcnp --backend cpu           # auto (default), gpu or cpu
 llevant-viewer                                    # the start screen: open a model from it
+llevant-viewer --backend cpu                      # the start screen, tracing on the CPU
 ```
 
 The model loads in the background (the reference 425 k-cell model takes ~20 s, a
@@ -20,7 +21,9 @@ second from the cache) while the window shows the step under way, how far it is 
 a Cancel button. The views then frame what is visible, not the model's outer world
 cell. Without a model the window opens on a start screen: "Open a model…" (Ctrl+O),
 the files opened last, or drop an input on the window; File has the same, and
-"Open recent".
+"Open recent". `--backend` applies to the models opened from it; `--state` needs a
+model. `llevant view` and `python -m llevant view` take the same arguments, and
+`llevant.view()` in Python opens the start screen too.
 
 A model compiled for the first time is shown before its search structures (octrees)
 are built: views are slower until they land, a few tens of seconds later on the

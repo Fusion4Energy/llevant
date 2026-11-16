@@ -48,6 +48,7 @@ f = llevant.Field.read(m, "run.msht", tally=14)   # or Field.cells(m, {12: 3.5})
 m.slice(z=37, field=f.with_scale(1e-6, 1e-2))      # values over the cells
 m.slice(z=37, field=f, outline_by="material")      # lines between materials only
 llevant.view("model.mcnp")              # the viewer; returns when its window closes
+llevant.view()                          # the viewer's start screen, to open a model from
 ```
 
 - **Numbers.** Cells, materials, universes and surfaces are MCNP numbers.

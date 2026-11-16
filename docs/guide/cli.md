@@ -23,6 +23,7 @@ llevant slice  model.mcnp --plane z=37 --field heat.csv -o heat.png     # values
 llevant slice  model.mcnp --plane z=37 --field heat.csv --outline-by material -o heat.png
 llevant render model.mcnp --field run.msht --tally 14 --log -o flux.png # an FMESH tally
 llevant view   model.mcnp                     # the viewer (feature `viewer`)
+llevant view                                  # its start screen: open a model from it
 ```
 
 ## Regions, labels and levels

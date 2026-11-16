@@ -31,12 +31,7 @@ pub fn run(
         None => ViewState::new(),
     };
     if let Some(b) = backend {
-        state.backend = match b {
-            "auto" => BackendChoice::Auto,
-            "gpu" => BackendChoice::Gpu,
-            "cpu" => BackendChoice::Cpu,
-            _ => return Err(format!("backend {b}: auto, gpu or cpu")),
-        };
+        state.backend = backend_choice(b)?;
     }
     let title = format!(
         "llevant: {}",
@@ -52,13 +47,28 @@ pub fn run(
     })
 }
 
-/// The viewer window with no model open: its start screen.
-pub fn start_screen(dev: DevOptions) -> Result<(), String> {
+/// The viewer window with no model open: its start screen. `backend`
+/// (`auto`, `gpu` or `cpu`) applies to the models opened from it.
+pub fn start_screen(backend: Option<&str>, dev: DevOptions) -> Result<(), String> {
+    let mut state = ViewState::new();
+    if let Some(b) = backend {
+        state.backend = backend_choice(b)?;
+    }
     window("llevant".into(), move |cc| {
-        let mut app = ViewerApp::empty(cc)?.with_dev(&dev);
+        let mut app = ViewerApp::new(cc, PathBuf::new(), state, None)?.with_dev(&dev);
         app.use_settings(Settings::load(), &cc.egui_ctx);
         Ok(app)
     })
+}
+
+/// The `--backend` value `b`.
+fn backend_choice(b: &str) -> Result<BackendChoice, String> {
+    match b {
+        "auto" => Ok(BackendChoice::Auto),
+        "gpu" => Ok(BackendChoice::Gpu),
+        "cpu" => Ok(BackendChoice::Cpu),
+        _ => Err(format!("backend {b}: auto, gpu or cpu")),
+    }
 }
 
 /// Run the window `make` builds the application of, until it is closed.

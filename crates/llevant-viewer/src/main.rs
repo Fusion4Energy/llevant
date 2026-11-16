@@ -52,6 +52,7 @@ fn main() -> Result<(), String> {
     };
     match args.model {
         Some(m) => llevant_viewer::run(m, args.state, args.backend.as_deref(), dev),
-        None => llevant_viewer::run::start_screen(dev),
+        None if args.state.is_some() => Err("--state needs a model".into()),
+        None => llevant_viewer::run::start_screen(args.backend.as_deref(), dev),
     }
 }

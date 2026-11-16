@@ -17,6 +17,7 @@ viewer. Check that it works:
 ```sh
 python -m llevant --version      # llevant 0.1.0
 python -m llevant view model.i   # the viewer, on your model
+python -m llevant view           # the viewer's start screen
 ```
 
 !!! tip "Use a virtual environment"

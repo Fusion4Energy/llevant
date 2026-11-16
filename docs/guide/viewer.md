@@ -18,9 +18,10 @@ llevant view model.i              # the llevant command
 python -m llevant view model.i    # from the Python package
 ```
 
-or start `llevant-viewer` on its own and use **Open a model…** (Ctrl+O), pick a
-recent file, or drop an input file on the window. From a Python script,
-`llevant.view("model.i")` opens it and returns when the window closes.
+or start any of them without a model (`llevant-viewer`, `llevant view`,
+`python -m llevant view`) and use **Open a model…** (Ctrl+O), pick a recent file, or
+drop an input file on the window. From a Python script, `llevant.view("model.i")`
+opens it and returns when the window closes (`llevant.view()`: the start screen).
 
 The first time a big model is opened it takes a while (about 20 s for a 425 000-cell
 model) while the window shows its progress. After that it is cached, and opens in
