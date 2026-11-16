@@ -355,7 +355,11 @@ impl GpuModel {
             )));
         }
         // Out of memory is an error to return (the caller can trace on the
-        // CPU), not a panic.
+        // CPU), not a panic. The pool is checked before it is written: a
+        // write to a buffer the device could not make is a validation error,
+        // which wgpu's default handler turns into a panic (seen with a large
+        // model on a laptop GPU, D3D12).
+        let invalid = gpu.device.push_error_scope(wgpu::ErrorFilter::Validation);
         let oom = gpu.device.push_error_scope(wgpu::ErrorFilter::OutOfMemory);
         let mut bytes = 0u64;
         let pool: Vec<wgpu::Buffer> = (0..n_chunks)
@@ -371,6 +375,16 @@ impl GpuModel {
                 })
             })
             .collect();
+        let errors = [oom.pop(), invalid.pop()].map(pollster::block_on);
+        if let Some(err) = errors.into_iter().flatten().next() {
+            return Err(Error::Gpu(format!(
+                "the GPU could not hold the model ({} MB in {} buffers of up to {} MB): {err}",
+                bytes >> 20,
+                pool.len(),
+                1u64 << (shift - 18)
+            )));
+        }
+        let oom = gpu.device.push_error_scope(wgpu::ErrorFilter::OutOfMemory);
         let mut w = PoolWriter::new(gpu, &pool, shift);
         w.extend(&m);
         drop(m);
