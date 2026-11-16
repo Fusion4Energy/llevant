@@ -234,7 +234,7 @@ D1SUNED cell-under-voxel readers) come from crates.io. The tally files the tests
 - **The viewer application**, driven headlessly with egui_kittest, and the edit storm.
 - **CI** (`.github/workflows`):
   - fmt, clippy, and tests on Linux and Windows;
-  - the GPU and viewer tests on lavapipe, and the GPU tests on D3D12 (WARP) on Windows;
+  - the GPU and viewer tests on lavapipe, and a GPU test (`tiles`: the renderer's shader through DXC) on D3D12 (WARP) on Windows;
   - the wheel with pytest;
   - MSRV and `cargo deny`.
 - **Nightly**: random proptest seeds, and the work-counter regression on the

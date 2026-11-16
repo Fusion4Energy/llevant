@@ -62,16 +62,20 @@ jobs:
 
   # The GPU renderer on D3D12 with WARP, Windows' software adapter: what a
   # Windows machine without a Vulkan driver uses, and where the shader compiler
-  # (DXC, linked in; FXC cannot compile the renderer) matters.
+  # (DXC, linked in; FXC cannot compile the renderer) matters. Only `tiles`:
+  # it compiles the whole renderer and checks its hits, while the other GPU
+  # tests take tens of CPU-minutes on a software adapter (WARP on 4 cores:
+  # well over half an hour each); the `gpu` job runs them all on Vulkan.
   gpu-windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - env:
           WGPU_BACKEND: dx12
-        run: cargo test --release -p llevant-gpu
+        run: cargo test --release -p llevant-gpu --lib --test tiles
 
   python:
     runs-on: ubuntu-latest
