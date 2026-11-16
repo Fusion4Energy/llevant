@@ -24,8 +24,8 @@ llevant-render.workspace = true
 llevant-scene = { workspace = true, features = ["tallies"] }
 llevant-cli = { workspace = true, features = ["gpu", "viewer"] }
 llevant-gpu.workspace = true
-numpy = "0.25"
-pyo3 = { version = "0.25", features = ["abi3-py39", "extension-module", "generate-import-lib"] }
+numpy = "0.30"
+pyo3 = { version = "0.30", features = ["abi3-py39", "extension-module", "generate-import-lib"] }
 rayon.workspace = true
 
 [lints]

@@ -12,8 +12,8 @@
 //!   opened on its own;
 //! - `LLEVANT_BENCH_SET=<dir>`: save the workloads there, and replay them
 //!   in later runs (A/B across builds);
-//! - `LLEVANT_PROFILE=<dir>` (Unix): pprof flamegraphs of the timed
-//!   section.
+//! - `LLEVANT_PROFILE=1` (Unix): pprof samples of the timed section, the
+//!   top functions printed.
 
 /// The system heap on Windows does not scale to large parallel batches
 /// (docs/decisions/0009-mimalloc.md).

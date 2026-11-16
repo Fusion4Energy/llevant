@@ -144,7 +144,7 @@ impl Label {
     /// Equal when status, path and involved cells are equal.
     fn __eq__(&self, other: &Bound<'_, PyAny>) -> bool {
         other
-            .downcast::<Label>()
+            .cast::<Label>()
             .is_ok_and(|o| o.get().key() == self.key())
     }
 

@@ -810,10 +810,12 @@ and the problem box brought it down to a few tens ([decision
 0002](../decisions/0002-residual-programs.md), [0003](../decisions/0003-problem-box.md)),
 and the fillers (level 1) now dominate.
 
-Profiling works without perf permissions: `LLEVANT_PROFILE=<dir>` makes `llevant-bench`
-`points`, `trace` and `view` sample their timed section with pprof (flamegraph SVG
-and top functions; `samply` would need `perf_event_paranoid` ≤ 1, i.e. sudo); self
-times are unreliable under inlining, inclusive times are better.
+Profiling works without perf permissions: `LLEVANT_PROFILE=1` makes `llevant-bench`
+`points`, `trace` and `view` sample their timed section with pprof and print the top
+functions (no flamegraph: pprof's `flamegraph` feature pulls in inferno, whose
+CDDL-1.0 licence `deny.toml` does not allow; `samply` would need
+`perf_event_paranoid` ≤ 1, i.e. sudo); self times are unreliable under inlining,
+inclusive times are better.
 
 Compiled models can be saved and read back (`saved.rs`, `Model::save` /
 `Model::read` / `Model::from_bytes`; [decision 0004](../decisions/0004-model-cache.md)): a header (magic, `FORMAT_VERSION`, `ENGINE_HASH`, a digest of the

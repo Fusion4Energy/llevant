@@ -7,7 +7,7 @@ use llevant::{Status, Vec3, NO_HIT, NO_SURFACE};
 use numpy::{Element, IntoPyArray, PyArray1, PyArrayMethods, PyUntypedArrayMethods};
 use pyo3::exceptions::PyIndexError;
 use pyo3::prelude::*;
-use pyo3::sync::GILOnceCell;
+use pyo3::sync::PyOnceLock;
 use pyo3::types::PyDict;
 
 use crate::convert::{invalid, status_code};
@@ -34,7 +34,7 @@ pub fn frozen_rows<'py>(py: Python<'py>, v: &[Vec3]) -> PyResult<Bound<'py, PyAn
 pub struct LabelTable {
     pub model: Arc<llevant::Model>,
     pub labels: Vec<llevant::Label>,
-    objects: GILOnceCell<Vec<Py<Label>>>,
+    objects: PyOnceLock<Vec<Py<Label>>>,
 }
 
 impl LabelTable {
@@ -42,7 +42,7 @@ impl LabelTable {
         LabelTable {
             model,
             labels,
-            objects: GILOnceCell::new(),
+            objects: PyOnceLock::new(),
         }
     }
 

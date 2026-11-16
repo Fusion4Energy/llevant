@@ -1,9 +1,10 @@
 //! Optional CPU profiling of a benchmark section, with no perf_event
 //! permissions needed (pprof samples from a timer signal in-process).
 //!
-//! `LLEVANT_PROFILE=dir`: each profiled section writes `dir/<name>.svg` (a
-//! flamegraph) and prints the functions with the most samples. Timer
-//! signals reach few of many busy threads, so profile with
+//! `LLEVANT_PROFILE=1`: each profiled section prints the functions with the
+//! most samples, by self and by inclusive count. (No flamegraph: pprof's
+//! `flamegraph` feature pulls in inferno, CDDL-1.0, which `deny.toml` does not
+//! allow.) Timer signals reach few of many busy threads, so profile with
 //! `RAYON_NUM_THREADS=1` (or a few) for enough samples.
 
 #[cfg(unix)]
@@ -17,13 +18,13 @@ pub struct Profile {
 /// Start profiling section `name` if `LLEVANT_PROFILE` is set.
 #[cfg(unix)]
 pub fn start(name: &str) -> Profile {
-    let guard = std::env::var("LLEVANT_PROFILE").ok().map(|dir| {
+    let guard = std::env::var_os("LLEVANT_PROFILE").map(|_| {
         let g = pprof::ProfilerGuardBuilder::default()
             .frequency(997)
             .blocklist(&["libc", "libgcc", "pthread", "vdso"])
             .build()
             .expect("start profiler");
-        (g, format!("{dir}/{name}"))
+        (g, name.to_string())
     });
     Profile { guard }
 }
@@ -31,24 +32,13 @@ pub fn start(name: &str) -> Profile {
 #[cfg(unix)]
 impl Drop for Profile {
     fn drop(&mut self) {
-        let Some((g, path)) = self.guard.take() else {
+        let Some((g, name)) = self.guard.take() else {
             return;
         };
         let report = match g.report().build() {
             Ok(r) => r,
-            Err(e) => return eprintln!("profile {path}: {e}"),
+            Err(e) => return eprintln!("profile {name}: {e}"),
         };
-        if let Some(dir) = std::path::Path::new(&path).parent() {
-            let _ = std::fs::create_dir_all(dir);
-        }
-        match std::fs::File::create(format!("{path}.svg")) {
-            Ok(f) => {
-                if let Err(e) = report.flamegraph(f) {
-                    eprintln!("flamegraph {path}: {e}");
-                }
-            }
-            Err(e) => eprintln!("{path}.svg: {e}"),
-        }
         // Self and inclusive sample counts per function.
         let mut own: HashMap<String, usize> = HashMap::new();
         let mut incl: HashMap<String, usize> = HashMap::new();
@@ -76,9 +66,9 @@ impl Drop for Profile {
         let top = |m: &HashMap<String, usize>, what: &str| {
             let mut v: Vec<_> = m.iter().collect();
             v.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
-            println!("profile {path}: {total} samples, top by {what}:");
-            for (name, n) in v.into_iter().take(25) {
-                println!("  {:5.1}%  {name}", 100.0 * *n as f64 / total.max(1) as f64);
+            println!("profile {name}: {total} samples, top by {what}:");
+            for (f, n) in v.into_iter().take(25) {
+                println!("  {:5.1}%  {f}", 100.0 * *n as f64 / total.max(1) as f64);
             }
         };
         top(&own, "self");

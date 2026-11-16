@@ -5,7 +5,18 @@ all-features = true
 
 [advisories]
 # Unmaintained crates are reported for the whole graph; each exception names why.
-ignore = []
+ignore = [
+    # ttf-parser (unmaintained, no safe upgrade): through ab_glyph, which
+    # llevant-render uses to draw label text with the bundled font; it parses
+    # only that font, never user input.
+    { id = "RUSTSEC-2026-0192", reason = "ab_glyph's font parser, bundled font only" },
+    # zvariant, zvariant_derive, zbus_names (folded into zbus 6, no safe upgrade):
+    # through accesskit's AT-SPI support in egui-winit, the viewer's accessibility
+    # bridge on Linux; they go away when egui moves to zbus 6.
+    { id = "RUSTSEC-2026-0370", reason = "egui-winit accessibility (zbus 5); goes with egui on zbus 6" },
+    { id = "RUSTSEC-2026-0371", reason = "egui-winit accessibility (zbus 5); goes with egui on zbus 6" },
+    { id = "RUSTSEC-2026-0372", reason = "egui-winit accessibility (zbus 5); goes with egui on zbus 6" },
+]
 
 [licenses]
 # llevant is EUPL-1.2; everything it links must be compatible with it.

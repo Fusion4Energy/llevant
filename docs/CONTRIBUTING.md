@@ -48,8 +48,8 @@ workload, `LLEVANT_GRID=off|auto|always` and `LLEVANT_RESIDUALS=off` change the 
 structures, `LLEVANT_CACHE=off` compiles instead of reading the cache,
 `LLEVANT_UNIVERSE=<u>` takes one universe on its own. Profiles:
 `cargo build --profile bench -p llevant-bench`, then
-`RAYON_NUM_THREADS=1 LLEVANT_PROFILE=<dir> target/bench/llevant-bench trace <model> 20000 100`
-writes flamegraphs.
+`RAYON_NUM_THREADS=1 LLEVANT_PROFILE=1 target/bench/llevant-bench trace <model> 20000 100`
+prints the functions with the most samples (by self and inclusive count).
 
 The command line and the viewer:
 

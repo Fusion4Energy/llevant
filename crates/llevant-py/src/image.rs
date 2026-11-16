@@ -8,7 +8,7 @@ use llevant_render::colours::{self, ColourBy};
 use llevant_scene::materials::Looks;
 use numpy::{IntoPyArray, PyArray2, PyArrayMethods};
 use pyo3::prelude::*;
-use pyo3::sync::GILOnceCell;
+use pyo3::sync::PyOnceLock;
 use pyo3::types::PyBytes;
 
 use crate::batch::LabelTable;
@@ -46,7 +46,7 @@ pub struct Image {
     /// Label ids of each pixel and their labels (CPU images).
     labels: Option<(LabelTable, Vec<u32>)>,
     source: Source,
-    png: GILOnceCell<Py<PyBytes>>,
+    png: PyOnceLock<Py<PyBytes>>,
 }
 
 impl Image {
@@ -75,7 +75,7 @@ impl Image {
             labels: Some((table, ids)),
             source: Source::Slice(s),
             model,
-            png: GILOnceCell::new(),
+            png: PyOnceLock::new(),
         }
     }
 
@@ -95,7 +95,7 @@ impl Image {
             labels: Some((table, h.ids)),
             source: Source::Render { camera, t: h.t },
             model,
-            png: GILOnceCell::new(),
+            png: PyOnceLock::new(),
         }
     }
 
@@ -134,7 +134,7 @@ impl Image {
             labels: None,
             source: Source::Gpu { camera, vis, t },
             model,
-            png: GILOnceCell::new(),
+            png: PyOnceLock::new(),
         }
     }
 
@@ -239,9 +239,7 @@ impl Image {
             return Ok(None);
         };
         let m = &self.model;
-        let h = py
-            .allow_threads(|| m.first_hits(&[ray], vis, None))
-            .map_err(err)?;
+        let h = py.detach(|| m.first_hits(&[ray], vis, None)).map_err(err)?;
         if h.ids[0] == NO_HIT {
             return Ok(None);
         }

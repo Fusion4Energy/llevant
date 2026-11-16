@@ -107,16 +107,16 @@ impl Model {
         let m = &self.inner;
         let x = self
             .index
-            .get_or_init(|| Arc::new(py.allow_threads(|| ModelIndex::new(m))))
+            .get_or_init(|| Arc::new(py.detach(|| ModelIndex::new(m))))
             .clone();
         if x.labels().is_none() && rules.iter().any(|q| q.uses_labels()) {
             let labels = match (&self.text, &self.path) {
-                (Some(t), _) => Some(py.allow_threads(|| Labels::of_text(t))),
-                (None, Some(p)) => Some(py.allow_threads(|| Labels::read(p)).map_err(err)?),
+                (Some(t), _) => Some(py.detach(|| Labels::of_text(t))),
+                (None, Some(p)) => Some(py.detach(|| Labels::read(p)).map_err(err)?),
                 (None, None) => None,
             };
             if let Some(l) = labels {
-                py.allow_threads(|| x.set_labels(m, Arc::new(l)));
+                py.detach(|| x.set_labels(m, Arc::new(l)));
             }
         }
         Ok(x)
@@ -165,7 +165,7 @@ impl Model {
 
     pub fn load(py: Python<'_>, path: PathBuf, opts: Options) -> PyResult<Model> {
         let m = py
-            .allow_threads(|| llevant_scene::store::Store::from_env().load(&path, &opts, None))
+            .detach(|| llevant_scene::store::Store::from_env().load(&path, &opts, None))
             .map_err(err)?;
         Ok(Model::new(m, Some(path), opts))
     }
@@ -173,7 +173,7 @@ impl Model {
     /// Universe `u` of this model, cut to `cut`, as a model of its own.
     fn open(&self, py: Python<'_>, u: i64, cut: Cut) -> PyResult<Model> {
         let (m, grid) = (&self.inner, self.opts.grid);
-        let sub = py.allow_threads(|| m.universe(u, cut, grid)).map_err(err)?;
+        let sub = py.detach(|| m.universe(u, cut, grid)).map_err(err)?;
         let mut out = Model::new(sub, self.path.clone(), self.opts.clone());
         out.opened = Some((u, cut));
         out.text = self.text.clone();
@@ -187,7 +187,7 @@ impl Model {
             _ => 1,
         };
         let m = &self.inner;
-        let b = *self.extents[k].get_or_init(|| py.allow_threads(|| m.extent(scope, 128)));
+        let b = *self.extents[k].get_or_init(|| py.detach(|| m.extent(scope, 128)));
         if !b.is_finite() || b.is_empty() {
             return Err(invalid(
                 "could not measure the model's extent; give `region`",
@@ -214,7 +214,7 @@ impl Model {
     fn selection_box(&self, py: Python<'_>, q: &Query) -> PyResult<Option<Aabb>> {
         let m = &self.inner;
         let x = self.index_for(py, &[q])?;
-        py.allow_threads(|| {
+        py.detach(|| {
             let set = q.resolve(m, &x).map_err(err)?;
             Ok(bounds::selection_box(m, &set))
         })
@@ -285,7 +285,7 @@ impl Model {
 
     fn volumes_of(&self, py: Python<'_>, g: VolumeGrid) -> PyResult<llevant::Volumes> {
         let m = &self.inner;
-        py.allow_threads(|| m.volumes(&g, None)).map_err(err)
+        py.detach(|| m.volumes(&g, None)).map_err(err)
     }
 }
 
@@ -467,7 +467,7 @@ impl Model {
         let q = query(cells, "cells")?;
         let m = &self.inner;
         let x = self.index_for(py, &[&q])?;
-        let boxes = py.allow_threads(|| -> PyResult<_> {
+        let boxes = py.detach(|| -> PyResult<_> {
             let set = q.resolve(m, &x).map_err(err)?;
             Ok(bounds::instance_boxes(m, &set))
         })?;
@@ -487,7 +487,7 @@ impl Model {
             return Ok(convert::bbox(&self.measured(py, scope)?));
         }
         let m = &self.inner;
-        Ok(convert::bbox(&py.allow_threads(|| m.extent(scope, n))))
+        Ok(convert::bbox(&py.detach(|| m.extent(scope, n))))
     }
 
     /// Where a point is: `locate(x, y, z)` or `locate((x, y, z))`; with
@@ -508,7 +508,7 @@ impl Model {
             _ => return Err(invalid("give x, y and z, or one (x, y, z)")),
         };
         let m = &self.inner;
-        let l = py.allow_threads(|| match level {
+        let l = py.detach(|| match level {
             None => m.classify_point(p),
             Some(_) => m.classify(&[p], Depth::from(level)).labels.swap_remove(0),
         });
@@ -527,7 +527,7 @@ impl Model {
         let pts = Points::extract(points, "points")?;
         let pts = pts.get();
         let m = &self.inner;
-        let c = py.allow_threads(|| m.classify(&pts, Depth::from(level)));
+        let c = py.detach(|| m.classify(&pts, Depth::from(level)));
         Classification::new(py, m.clone(), c)
     }
 
@@ -557,7 +557,7 @@ impl Model {
         };
         let m = &self.inner;
         let tr = py
-            .allow_threads(|| m.trace(std::slice::from_ref(&line), Depth::from(level)))
+            .detach(|| m.trace(std::slice::from_ref(&line), Depth::from(level)))
             .map_err(err)?;
         let segs: Vec<llevant::Segment> = tr.segments(0).map(|k| tr.segment(k)).collect();
         segs.into_iter()
@@ -592,7 +592,7 @@ impl Model {
         let lines = convert::lines(start, end, dir, t_min.unwrap_or(&zero), t_max, None)?;
         let m = &self.inner;
         let tr = py
-            .allow_threads(|| m.trace(&lines, Depth::from(level)))
+            .detach(|| m.trace(&lines, Depth::from(level)))
             .map_err(err)?;
         Tracing::new(py, m.clone(), tr)
     }
@@ -645,9 +645,7 @@ impl Model {
             None,
         )?;
         let m = &self.inner;
-        let h = py
-            .allow_threads(|| m.first_hits(&rays, &vis, None))
-            .map_err(err)?;
+        let h = py.detach(|| m.first_hits(&rays, &vis, None)).map_err(err)?;
         Hits::new(py, m.clone(), h)
     }
 
@@ -701,7 +699,7 @@ impl Model {
         let m = &self.inner;
         let looks = self.looks_or(materials)?;
         let field = field.as_ref().map(|f| f.for_model(m)).transpose()?;
-        let img = py.allow_threads(|| {
+        let img = py.detach(|| {
             m.slice(&s, Depth::from(level))
                 .map(|tr| Image::slice(m.clone(), &looks, field, s, tr, by, outline, level))
         });
@@ -820,7 +818,7 @@ impl Model {
                     None if isolating => {
                         let m = &self.inner;
                         let from = py
-                            .allow_threads(|| bounds::view_from(m, &vis, &b, [-0.6, -0.7, 0.4]))
+                            .detach(|| bounds::view_from(m, &vis, &b, [-0.6, -0.7, 0.4]))
                             .map_err(err)?;
                         from.map(|x| -x)
                     }
@@ -847,7 +845,7 @@ impl Model {
         let paint = Paint::new(m, looks, by).with_field(field);
         if gpu {
             let device = gpu_device()?;
-            let out = py.allow_threads(|| {
+            let out = py.detach(|| {
                 let mut g = self.gpu.lock().unwrap_or_else(|e| e.into_inner());
                 if g.is_none() {
                     *g = Some(llevant_gpu::GpuModel::upload(device, m)?);
@@ -862,7 +860,7 @@ impl Model {
             let (frame, rgb) = out.map_err(err)?;
             return Ok(Image::gpu(m.clone(), cam, vis, &frame, rgb));
         }
-        let out = py.allow_threads(|| {
+        let out = py.detach(|| {
             let hits = m.render(&cam, &vis)?;
             let probes = Probe::from_hits(m, &hits);
             let mut rgb = render_image(&paint, &probes, &cam)?;
@@ -950,7 +948,7 @@ impl Model {
         };
         let m = &self.inner;
         let c = py
-            .allow_threads(|| {
+            .detach(|| {
                 m.volumes_to(
                     &g,
                     &target,
@@ -1006,7 +1004,7 @@ impl Model {
             )
         };
         let c = py
-            .allow_threads(|| m.cell_volumes(&idx, &target, None))
+            .detach(|| m.cell_volumes(&idx, &target, None))
             .map_err(err)?;
         converged_groups(py, &self.inner, c)
     }
@@ -1016,9 +1014,7 @@ impl Model {
     #[pyo3(signature = (precision = DEFAULT_PRECISION))]
     fn fingerprints(&self, py: Python<'_>, precision: f64) -> PyResult<Fingerprints> {
         let m = &self.inner;
-        let f = py
-            .allow_threads(|| m.fingerprints(precision))
-            .map_err(err)?;
+        let f = py.detach(|| m.fingerprints(precision)).map_err(err)?;
         Fingerprints::new(py, m, &f)
     }
 
@@ -1028,7 +1024,7 @@ impl Model {
     fn diff(&self, py: Python<'_>, other: &Model, precision: f64) -> PyResult<Diff> {
         let (a, b) = (&self.inner, &other.inner);
         let d = py
-            .allow_threads(|| a.fingerprint_diff(b, precision))
+            .detach(|| a.fingerprint_diff(b, precision))
             .map_err(err)?;
         Diff::new(py, &d)
     }
@@ -1045,7 +1041,7 @@ impl Model {
         let base = self.opened.is_none().then(|| self.inner.clone());
         let opts = self.opts.clone();
         let m = py
-            .allow_threads(|| {
+            .detach(|| {
                 let store = llevant_scene::store::Store::from_env();
                 let staged = store.load_staged(&p, &opts, None, base.as_deref())?;
                 let m = store.complete(staged, None)?;
@@ -1068,7 +1064,7 @@ impl Model {
         let opts = self.opts.clone();
         let inner = self.inner.clone();
         let m = py
-            .allow_threads(|| {
+            .detach(|| {
                 let (m, _) = inner.recompile(text.as_bytes(), &opts, None)?;
                 m.into_complete(None)
             })

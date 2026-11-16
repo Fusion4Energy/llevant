@@ -54,7 +54,7 @@ impl Field {
 }
 
 /// `{number: value}` from a dict, or `(numbers, values)` pairs.
-fn pairs<K: for<'a> FromPyObject<'a> + Eq + std::hash::Hash>(
+fn pairs<K: for<'py> FromPyObjectOwned<'py> + Eq + std::hash::Hash>(
     obj: &Bound<'_, PyAny>,
 ) -> PyResult<Vec<(K, f64)>> {
     let d: HashMap<K, f64> = obj
@@ -252,7 +252,7 @@ impl Field {
         let m = model.inner.clone();
         let input = model.input_path();
         let f = py
-            .allow_threads(|| rf::read(&m, &path, input.as_deref(), &choice))
+            .detach(|| rf::read(&m, &path, input.as_deref(), &choice))
             .map_err(err)?;
         Ok(Field::new(model, f, "", ""))
     }
@@ -377,7 +377,7 @@ impl Field {
         let pts = Points::extract(points, "points")?;
         let pts = pts.get();
         let (m, f) = (&self.model, &self.inner.field);
-        let v: Vec<f64> = py.allow_threads(|| {
+        let v: Vec<f64> = py.detach(|| {
             let c = m.classify(&pts, Depth::All);
             pts.iter()
                 .zip(&c.ids)

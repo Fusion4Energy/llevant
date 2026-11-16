@@ -30,7 +30,7 @@ use crate::model::{options, Model};
 /// Releases the GIL while it works.
 #[pyfunction]
 fn main(py: Python<'_>, argv: Vec<String>) -> i32 {
-    py.allow_threads(|| llevant_cli::run_cli(argv)).into()
+    py.detach(|| llevant_cli::run_cli(argv)).into()
 }
 
 /// Read and compile an MCNP input file.
@@ -61,7 +61,7 @@ fn from_text(
     grid: &str,
 ) -> PyResult<Model> {
     let opts = options(tolerance, world_half_size, grid)?;
-    let m = py.allow_threads(|| llevant::Model::from_text(text, &opts));
+    let m = py.detach(|| llevant::Model::from_text(text, &opts));
     Ok(Model::new(m, None, opts).with_text(text.into()))
 }
 

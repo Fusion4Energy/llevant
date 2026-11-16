@@ -9,7 +9,7 @@ default-members = ["crates/llevant", "crates/llevant-scene", "crates/llevant-ren
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.93"
+rust-version = "1.95"
 license = "EUPL-1.2"
 authors = ["Alvaro Cubi"]
 repository = "https://github.com/Fusion4Energy/llevant"

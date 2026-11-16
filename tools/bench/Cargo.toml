@@ -24,7 +24,8 @@ wgpu = "30.0.1"
 
 [target.'cfg(unix)'.dependencies]
 # In-process sampling profiler (`LLEVANT_PROFILE`): needs no perf_event permissions.
-pprof = { version = "0.15", default-features = false, features = ["flamegraph"] }
+# No `flamegraph` feature: it pulls in inferno (CDDL-1.0, not allowed by deny.toml).
+pprof = { version = "0.15", default-features = false }
 
 [lints]
 workspace = true

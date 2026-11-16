@@ -64,7 +64,7 @@ On Windows you can also drag a model file onto `llevant-viewer.exe`.
 
 ## Build from source
 
-With [Rust](https://rustup.rs) 1.93 or later:
+With [Rust](https://rustup.rs) 1.95 or later:
 
 ```sh
 cargo install llevant-cli --features gpu,viewer   # `llevant`, with `render --gpu` and `llevant view`
