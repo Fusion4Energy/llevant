@@ -5,3 +5,5 @@ __pycache__/
 *.pyd
 *.pdb
 CLAUDE.local.md
+/site
+docs/examples/core-power.csv

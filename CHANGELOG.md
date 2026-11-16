@@ -26,3 +26,6 @@ First public release.
   cards in place, live surface drags, rules, cuts, a ruler and FMESH layout.
 - **Python** (`pip install llevant`): models kept in memory, numpy batch queries,
   images inline in Jupyter, and `python -m llevant` for the command and the viewer.
+- **Documentation** at <https://alvarocubi.github.io/llevant/>: install, a tour on
+  an example model (`docs/examples/cask.i`), how-to guides, the viewer, command line
+  and Python guides, and the Python API reference.

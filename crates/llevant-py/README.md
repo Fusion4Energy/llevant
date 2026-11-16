@@ -13,7 +13,7 @@ It is checked point by point against MCNP 6.2. The Python module is built on the
 Rust engine of the same name: models are compiled once (and cached on disk), then
 queried in numpy batches.
 
-![A cutaway view](https://raw.githubusercontent.com/AlvaroCubi/llevant/main/docs/img/render.png)
+![The viewer: a reactor core cut open in 3D, beside an exact slice through its fuel pins](https://raw.githubusercontent.com/AlvaroCubi/llevant/main/docs/img/viewer.png)
 
 ## Install
 
@@ -21,8 +21,8 @@ queried in numpy batches.
 pip install llevant              # numpy comes with it; add polars or pandas for data frames
 ```
 
-One abi3 wheel serves Python 3.9 and later, on Windows and Linux. It includes the
-GPU renderer and the interactive viewer.
+One abi3 wheel serves Python 3.9 and later, on Windows and Linux (x86-64; no macOS
+yet). It includes the GPU renderer and the interactive viewer.
 
 ## Use
 
@@ -49,12 +49,16 @@ python -m llevant render model.mcnp --gpu -o view.png
 python -m llevant view model.mcnp
 ```
 
-## More
+## Documentation
 
-- [Python guide](https://github.com/AlvaroCubi/llevant/blob/main/docs/guide/python.md)
-  and the [API tour](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-py/examples/tour.py)
-- [Command line](https://github.com/AlvaroCubi/llevant/blob/main/docs/guide/cli.md),
-  [viewer](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-viewer/README.md)
+**<https://alvarocubi.github.io/llevant/>**:
+
+- [Install](https://alvarocubi.github.io/llevant/install/) and
+  [getting started](https://alvarocubi.github.io/llevant/getting-started/) on an example model
+- [How do I…?](https://alvarocubi.github.io/llevant/how-to/): gaps and overlaps, volumes,
+  tallies, comparing models
+- [Python guide](https://alvarocubi.github.io/llevant/guide/python/) and
+  [API reference](https://alvarocubi.github.io/llevant/reference/python-api/)
 - [Source, issues and changelog](https://github.com/AlvaroCubi/llevant)
 
 Licence: EUPL-1.2.

@@ -622,7 +622,10 @@ impl SliceView {
     /// Whether every row is traced, or the slice was never laid out (its
     /// tab not shown), so that nothing is coming.
     pub fn settled(&self) -> bool {
-        self.filled.is_empty() || self.rows_done >= self.filled.len()
+        // A quarter-resolution image traced while the view moved is not the
+        // final one: the full one follows once the view has been still.
+        let full = self.spec.as_ref().is_none_or(|s| s.scale == [1, 1]);
+        full && (self.filled.is_empty() || self.rows_done >= self.filled.len())
     }
 
     /// The plane shown.

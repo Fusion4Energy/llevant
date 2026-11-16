@@ -821,8 +821,9 @@ mod tests {
     }
 
     #[test]
-    fn readme_view_file_reads() {
-        let readme = include_str!("../README.md");
+    fn reference_view_file_reads() {
+        // The example of the view file in the viewer's reference page.
+        let readme = include_str!("../../../docs/reference/viewer.md");
         let start = readme.find("```json\n").expect("a JSON example") + 8;
         let len = readme[start..].find("```").unwrap();
         let s: ViewState = serde_json::from_str(&readme[start..start + len]).unwrap();

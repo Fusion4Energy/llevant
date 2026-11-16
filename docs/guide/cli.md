@@ -1,12 +1,8 @@
 # The `llevant` command
 
-```sh
-cargo install llevant-cli                               # `llevant`
-cargo install llevant-cli --features gpu,viewer         # with render --gpu and `llevant view`
-```
-
-The Python wheel ships the same command as `python -m llevant`, with the GPU and the
-viewer built in. Every subcommand has `--help`.
+The `llevant` command comes with the Python package (as `python -m llevant`) and with
+the downloaded programs ([Install](../install.md)). Every subcommand has `--help`.
+New to it? Start with [Getting started](../getting-started.md).
 
 ```sh
 llevant info   model.mcnp                     # sizes, extent, diagnostics

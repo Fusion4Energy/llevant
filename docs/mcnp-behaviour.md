@@ -2,7 +2,7 @@
 
 What MCNP 6.2 (D1SUNED 4.1.2 build) does where the manual is silent or easy to
 misread, found while checking llevant against it. llevant follows MCNP on each of
-these. MCNP is the reference for semantics (`CONTRIBUTING.md`); to settle a new
+these. MCNP is the reference for semantics ([contributing](CONTRIBUTING.md)); to settle a new
 question, probe it with a tiny input, or extend the zoo models in
 `tools/mcnp-oracle/models` and check them with `mcnp-oracle`.
 

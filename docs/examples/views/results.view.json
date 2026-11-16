@@ -1,0 +1,9 @@
+{
+  "camera": { "target": [0, 0, 0], "distance": 1500, "yaw_deg": -55, "pitch_deg": 28, "fov_deg": 30 },
+  "colour_by": "material",
+  "hidden_cells": [30, 28, 29, 27, 26, 25, 22, 24],
+  "clip": { "point": [0, 0, 0], "normal": [0, -1, 0] },
+  "effects": { "outline": true, "ambient_occlusion": true },
+  "slice": { "axis": "z", "at": 0.5, "centre": [0, 0], "width": 380, "outline": false },
+  "field": { "path": "core-power.csv" }
+}

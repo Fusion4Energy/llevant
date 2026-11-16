@@ -1,0 +1,10 @@
+{
+  "camera": { "target": [0, 0, -30], "distance": 2600, "yaw_deg": -55, "pitch_deg": 22, "fov_deg": 30 },
+  "colour_by": "realistic",
+  "materials": { "3": "ceramic colour=#3d4148" },
+  "hidden_cells": [30],
+  "clip": { "point": [0, 0, 0], "normal": [0, -1, 0] },
+  "effects": { "outline": true, "ambient_occlusion": true },
+  "slice": { "axis": "z", "at": 0.5, "centre": [22, 22], "width": 30, "outline": true },
+  "pins": [{ "point": [22.68, 22.68, 0.5], "note": "a fuel pin" }]
+}

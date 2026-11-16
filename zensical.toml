@@ -1,0 +1,153 @@
+# The documentation site (https://alvarocubi.github.io/llevant/), built from docs/
+# by Zensical and published by .github/workflows/docs.yml.
+#
+#   uvx --with-requirements docs/requirements.txt zensical serve   # http://localhost:8000
+#   uvx --with-requirements docs/requirements.txt zensical build --strict   # as CI
+#
+# or `pip install -r docs/requirements.txt`, then `zensical serve`. A bare
+# `uvx zensical` lacks mkdocstrings-python, which the Python API page needs.
+
+[project]
+site_name = "llevant"
+site_description = "Fast, exact geometry queries on MCNP models: a viewer, a command line and a Python module"
+site_url = "https://alvarocubi.github.io/llevant/"
+repo_url = "https://github.com/AlvaroCubi/llevant"
+repo_name = "AlvaroCubi/llevant"
+edit_uri = "edit/main/docs/"
+docs_dir = "docs"
+site_dir = "site"
+copyright = "llevant is licensed under the EUPL-1.2"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Get started" = [
+    "install.md",
+    "getting-started.md",
+  ] },
+  { "Use" = [
+    "how-to.md",
+    "guide/viewer.md",
+    "guide/cli.md",
+    "guide/python.md",
+    "help.md",
+  ] },
+  { "Reference" = [
+    "reference/python-api.md",
+    "reference/viewer.md",
+    "reference/supported-input.md",
+    "mcnp-behaviour.md",
+    "changelog.md",
+  ] },
+  { "Development" = [
+    "CONTRIBUTING.md",
+    "architecture.md",
+    "contracts.md",
+    { "Engine internals" = "internals/engine.md" },
+    { "Rendering internals" = "internals/rendering.md" },
+    "benchmarks.md",
+    { "Decisions" = [
+      "decisions/README.md",
+      "decisions/0001-cpu-exact-gpu-approximate.md",
+      "decisions/0002-residual-programs.md",
+      "decisions/0003-problem-box.md",
+      "decisions/0004-model-cache.md",
+      "decisions/0005-sliced-gpu-dispatches.md",
+      "decisions/0006-reprojection-gpu-only.md",
+      "decisions/0007-no-secondary-rays.md",
+      "decisions/0008-ui-thread-rule.md",
+      "decisions/0009-mimalloc.md",
+      "decisions/0010-staged-models-and-recompile.md",
+      "decisions/0011-live-drag-drafts.md",
+      "decisions/0012-viewer-redesign.md",
+      "decisions/0013-viewer-tracing-latency.md",
+      "decisions/0014-gpu-exit-bound.md",
+      "decisions/0015-gpu-state-per-model-and-timing.md",
+    ] },
+  ] },
+]
+
+[project.theme]
+language = "en"
+# The viewer's logo (crates/llevant-viewer/assets/logo.png, drawn by gen_logo.py), copied here.
+logo = "img/logo.png"
+favicon = "img/logo.png"
+features = [
+  "content.action.edit",
+  "content.code.copy",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "indigo"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "indigo"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.snippets.base_path = ["."]
+pymdownx.snippets.check_paths = true
+pymdownx.superfences = {}
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+
+# The Python API page is generated from the type stubs (_llevant.pyi), which carry
+# every docstring: the site never builds the Rust extension.
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["crates/llevant-py/python"]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+show_source = false
+show_root_heading = false
+show_root_toc_entry = false
+show_bases = false
+members_order = "source"
+docstring_style = "sphinx"
+heading_level = 2
+show_symbol_type_heading = true
+show_symbol_type_toc = true
+show_signature_annotations = true
+separate_signature = true
+signature_crossrefs = true
+filters = ["!^_"]

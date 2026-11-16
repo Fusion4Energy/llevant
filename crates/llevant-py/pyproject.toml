@@ -27,7 +27,7 @@ dependencies = ["numpy>=1.21"]
 
 [project.urls]
 Homepage = "https://github.com/AlvaroCubi/llevant"
-Documentation = "https://github.com/AlvaroCubi/llevant/blob/main/docs/guide/python.md"
+Documentation = "https://alvarocubi.github.io/llevant/"
 Source = "https://github.com/AlvaroCubi/llevant"
 Issues = "https://github.com/AlvaroCubi/llevant/issues"
 Changelog = "https://github.com/AlvaroCubi/llevant/blob/main/CHANGELOG.md"

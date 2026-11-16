@@ -4,13 +4,16 @@ Fast MCNP geometry engine in Rust. Read `docs/architecture.md` for the crates, t
 between them and the data flow; `docs/internals/engine.md` and `docs/internals/rendering.md`
 for details; `docs/decisions/` for why things are as they are (with the numbers);
 `docs/mcnp-behaviour.md` for what MCNP does; `docs/benchmarks.md` for current numbers
-(`llevant-bench report`, dist profile). `CONTRIBUTING.md` has the commands and the release
-steps.
+(`llevant-bench report`, dist profile). `docs/CONTRIBUTING.md` has the commands and the release
+steps. The exact user-facing references, kept in step with the code: `docs/guide/cli.md`
+("Scripting and agents": JSON shapes, exit codes), `docs/reference/viewer.md` (viewer, view
+file), `docs/reference/supported-input.md` (input read and not read) and the stubs
+`crates/llevant-py/python/llevant/_llevant.pyi` (the site's Python API page is generated from them).
 
 ## Commands
 
 The commands (tests, lints, benchmarks, checks, the viewer, Python, the MCNP oracle) are in
-`CONTRIBUTING.md`, "Commands"; releases in its "Releases". Mesh geometry and the
+`docs/CONTRIBUTING.md`, "Commands"; releases in its "Releases". Mesh geometry and the
 meshtal/MCTAL readers come from aci-tallies (crates.io); the tally files the tests read are
 copies of its fixtures in `tests/fixtures/tallies`. CI: `.github/workflows` (fixed proptest
 seed; `nightly.yml` random seeds and the work-counter baseline). Machine-specific

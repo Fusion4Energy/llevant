@@ -53,7 +53,8 @@ pub(crate) struct VolumeArgs {
     #[arg(long, value_enum, default_value = "cell")]
     by: GroupBy,
     /// Output: a text table, CSV, or JSON (its fields: docs/guide/cli.md,
-    /// "Scripting and agents").
+    /// "Scripting and agents";
+    /// https://alvarocubi.github.io/llevant/guide/cli/#scripting-and-agents).
     #[arg(long, value_enum, default_value = "text")]
     pub(crate) format: Format,
 }
@@ -121,7 +122,8 @@ pub(crate) struct CheckArgs {
     #[command(flatten)]
     grid: GridArgs,
     /// Output: a text table, CSV, or JSON (its fields: docs/guide/cli.md,
-    /// "Scripting and agents").
+    /// "Scripting and agents";
+    /// https://alvarocubi.github.io/llevant/guide/cli/#scripting-and-agents).
     #[arg(long, value_enum, default_value = "text")]
     pub(crate) format: Format,
 }

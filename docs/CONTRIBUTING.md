@@ -61,6 +61,52 @@ LLEVANT_VIEWER_TEST_PNG=out.png cargo test --release -p llevant-viewer --test ap
 target/release/llevant-viewer <model> --storm   # the UI thread's work per frame through edits
 ```
 
+The Python module from a checkout, into the active virtual environment, and a Windows
+wheel built on Linux (once: `rustup target add x86_64-pc-windows-msvc` and
+`cargo install cargo-xwin`):
+
+```sh
+cd crates/llevant-py && maturin develop --release
+cd crates/llevant-py && rm -rf python/llevant/__pycache__ \
+  && maturin build --release --target x86_64-pc-windows-msvc -i python3.12 -o ../../untracked/dist
+                                      # (without removing __pycache__ it ends up in the wheel)
+```
+
+The documentation site (`zensical.toml`; published from `main` by
+`.github/workflows/docs.yml`):
+
+```sh
+uvx --with-requirements docs/requirements.txt zensical serve   # http://localhost:8000, rebuilt on every save
+uvx --with-requirements docs/requirements.txt zensical build --strict   # as CI: broken links fail it
+```
+
+Without uv: `pip install -r docs/requirements.txt`, then `zensical serve`. A bare
+`uvx zensical` fails ("mkdocstrings is not installed"): the Python API page needs
+`mkdocstrings-python` beside Zensical.
+
+The pages under `docs/` serve two readers. The user pages (`index.md`, `install.md`,
+`getting-started.md`, `how-to.md`, `help.md`, `guide/`, `reference/`) are for people
+who use llevant and may not program: plain words, a task first, every command shown
+runnable on `docs/examples/cask.i`. The rest (`architecture.md`, `contracts.md`,
+`internals/`, `decisions/`, `benchmarks.md`) is for developers and agents, and must
+stay exact. Images in the user pages come from the commands beside them; regenerate
+them when the output changes. The Python API page is generated from the docstrings
+in `_llevant.pyi`: change the docstring, not the page.
+
+The viewer screenshots (`docs/img/viewer*.png`, in the README and the site) are of
+`docs/examples/core.i` and `cask-v2.i`, at the views in `docs/examples/views`. The
+settings file picks the workspace (`Explore`, `Results` or `Check`), so that your own
+viewer settings are left alone:
+
+```sh
+python docs/examples/gen_core.py --power   # core.i and core-power.csv (the results view's field)
+echo '{"frame":{"workspace":"Results"}}' > shot-settings.json
+LLEVANT_VIEWER_SETTINGS=shot-settings.json target/release/llevant-viewer docs/examples/core.i \
+  --state docs/examples/views/results.view.json --screenshot docs/img/viewer-results.png
+```
+
+then scale them to 1600 pixels wide.
+
 Against MCNP itself (needs `mcnp6`; a large model takes MCNP tens of minutes to set up):
 
 ```sh
@@ -79,7 +125,7 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 - Before pushing: `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D
   warnings`, `cargo test --release`. Changes to the GPU renderer or the viewer also run
   `cargo test --release -p llevant-gpu -p llevant-viewer`.
-- Add an entry to [`CHANGELOG.md`](CHANGELOG.md) under the top section ("Unreleased", or
+- Add an entry to [`CHANGELOG.md`](https://github.com/AlvaroCubi/llevant/blob/main/CHANGELOG.md) under the top section ("Unreleased", or
   the version being prepared) for anything a user of the command, the library, Python or
   the viewer would notice.
 

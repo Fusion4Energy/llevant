@@ -21,6 +21,37 @@
 //! - [`labels`]: where to write cell and surface numbers on slices.
 //! - [`ghost`]: ghost shells over renders.
 //! - [`png`]: PNG files.
+//!
+//! A slice, volumes and a realistic image of a model:
+//!
+//! ```no_run
+//! use llevant::{Axis, Camera, Depth, Model, Options, Scope, Slice, Visibility, VolumeGrid};
+//! use llevant_render::{colours::{ColourBy, Paint}, png::write_png, shading};
+//! use llevant_scene::materials::Looks;
+//!
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let model = Model::load("model.mcnp", &Options::default(), None)?;
+//!     let region = model.extent(Scope::Contents, 128); // measured box around the contents
+//!     let slice = Slice::axis(Axis::Z, 37.0, &region, 1000); // the plane z = 37
+//!     let ids = slice.pixels(&model.slice(&slice, Depth::All)?); // label id per pixel
+//!     println!("{} pixels", ids.len());
+//!
+//!     let vols = model.volumes(&VolumeGrid::seeded(region, 2.0, 1), None)?;
+//!     for i in vols.problems() {
+//!         println!("{}: {} cm3", model.describe(&vols.labels[i]), vols.volumes[i].estimate);
+//!     }
+//!
+//!     // Material looks are a value of their own: the model never changes.
+//!     let looks = Looks::new(&model, &[(12, "copper roughness=0.2".parse()?)])?;
+//!     let cam = Camera::fit(&region, [0.6, 0.7, -0.4], 800, 600);
+//!     let hits = model.render(&cam, &Visibility::solid(&model))?;
+//!     let probes = shading::Probe::from_hits(&model, &hits);
+//!     let paint = Paint::new(&model, &looks, ColourBy::Realistic);
+//!     let rgb = shading::render_image(&paint, &probes, &cam)?;
+//!     write_png("view.png".as_ref(), 800, 600, &rgb)?;
+//!     Ok(())
+//! }
+//! ```
 
 pub mod colours;
 pub mod field;

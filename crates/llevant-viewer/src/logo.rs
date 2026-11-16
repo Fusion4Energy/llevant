@@ -1,11 +1,10 @@
-//! The llevant logo (the rosette of the Fusion for Energy emblem, the
-//! stars of Europe encircled in yellow): on the start screen, as the
-//! window's icon, and as the viewer's spinner, the petals turning about
-//! the stars that stay still.
+//! The llevant logo (a golden wind rose; llevant is the east wind): on
+//! the start screen, as the window's icon, and as the viewer's spinner,
+//! the star turning inside the ring that stays still.
 //!
-//! `assets/logo.png` is the whole rosette; `logo-stars.png` and
-//! `logo-petals.png` are it cut at a radius between the ring of stars and
-//! the petals, so that the two can be drawn apart. egui's wgpu renderer
+//! `assets/logo.png` is the whole rose; `logo-ring.png` and
+//! `logo-star.png` are its two parts, drawn apart. All three are drawn by
+//! `assets/gen_logo.py`. egui's wgpu renderer
 //! makes no mipmaps, so each is uploaded at a few sizes, halved by box
 //! filtering, and drawn from the smallest not smaller than the pixels it
 //! covers (a 256 px image drawn at 14 px otherwise shimmers as it turns).
@@ -13,13 +12,13 @@
 use std::f32::consts::TAU;
 
 const LOGO: &[u8] = include_bytes!("../assets/logo.png");
-const STARS: &[u8] = include_bytes!("../assets/logo-stars.png");
-const PETALS: &[u8] = include_bytes!("../assets/logo-petals.png");
+const RING: &[u8] = include_bytes!("../assets/logo-ring.png");
+const STAR: &[u8] = include_bytes!("../assets/logo-star.png");
 
-/// Turns per second of the spinner's petals.
+/// Turns per second of the spinner's star.
 const TURNS_PER_SECOND: f32 = 0.25;
 
-/// The window's icon: the rosette.
+/// The window's icon: the rose.
 pub fn icon() -> egui::IconData {
     let (width, height, rgba) = decode(LOGO);
     egui::IconData {
@@ -29,7 +28,7 @@ pub fn icon() -> egui::IconData {
     }
 }
 
-/// The rosette, `size` points across, still.
+/// The rose, `size` points across, still.
 pub fn logo(ui: &mut egui::Ui, size: f32) -> egui::Response {
     let (rect, r) = ui.allocate_exact_size(egui::Vec2::splat(size), egui::Sense::hover());
     if ui.is_rect_visible(rect) {
@@ -39,14 +38,14 @@ pub fn logo(ui: &mut egui::Ui, size: f32) -> egui::Response {
     r
 }
 
-/// The spinner: the rosette, `size` points across, its petals turning.
+/// The spinner: the rose, `size` points across, its star turning.
 pub fn spinner(ui: &mut egui::Ui, size: f32) -> egui::Response {
     let (rect, r) = ui.allocate_exact_size(egui::Vec2::splat(size), egui::Sense::hover());
     if ui.is_rect_visible(rect) {
         let t = textures(ui.ctx());
         let time = ui.input(|i| i.time) as f32;
-        paint(ui, rect, &t.petals, (time * TURNS_PER_SECOND).fract() * TAU);
-        paint(ui, rect, &t.stars, 0.0);
+        paint(ui, rect, &t.ring, 0.0);
+        paint(ui, rect, &t.star, (time * TURNS_PER_SECOND).fract() * TAU);
         ui.ctx().request_repaint();
     }
     r
@@ -65,8 +64,8 @@ struct Levels(Vec<egui::TextureHandle>);
 #[derive(Clone)]
 struct Textures {
     logo: Levels,
-    stars: Levels,
-    petals: Levels,
+    ring: Levels,
+    star: Levels,
 }
 
 fn textures(ctx: &egui::Context) -> Textures {
@@ -76,8 +75,8 @@ fn textures(ctx: &egui::Context) -> Textures {
     }
     let t = Textures {
         logo: levels(ctx, "logo", LOGO),
-        stars: levels(ctx, "logo-stars", STARS),
-        petals: levels(ctx, "logo-petals", PETALS),
+        ring: levels(ctx, "logo-ring", RING),
+        star: levels(ctx, "logo-star", STAR),
     };
     ctx.data_mut(|d| d.insert_temp(id, t.clone()));
     t
@@ -160,7 +159,7 @@ mod tests {
 
     #[test]
     fn bundled_images_decode_square() {
-        for png in [LOGO, STARS, PETALS] {
+        for png in [LOGO, RING, STAR] {
             let (w, h, rgba) = decode(png);
             assert_eq!(w, h);
             assert_eq!(rgba.len(), (w * h * 4) as usize);

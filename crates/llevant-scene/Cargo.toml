@@ -33,3 +33,7 @@ tallies = ["dep:aci-tallies"]
 
 [lints]
 workspace = true
+
+# docs.rs documents the optional parts too: reading tally files, the serde forms.
+[package.metadata.docs.rs]
+all-features = true

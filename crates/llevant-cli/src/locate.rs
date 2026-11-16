@@ -25,7 +25,8 @@ pub(crate) struct LocateArgs {
     #[arg(long)]
     level: Option<usize>,
     /// Output: a text table, CSV, or JSON (its fields: docs/guide/cli.md,
-    /// "Scripting and agents").
+    /// "Scripting and agents";
+    /// https://alvarocubi.github.io/llevant/guide/cli/#scripting-and-agents).
     #[arg(long, value_enum, default_value = "text")]
     pub(crate) format: Format,
 }
@@ -75,7 +76,8 @@ pub(crate) struct TraceArgs {
     #[arg(long, conflicts_with = "to")]
     lines: Option<PathBuf>,
     /// Output: a text table, CSV, or JSON (its fields: docs/guide/cli.md,
-    /// "Scripting and agents").
+    /// "Scripting and agents";
+    /// https://alvarocubi.github.io/llevant/guide/cli/#scripting-and-agents).
     #[arg(long, value_enum, default_value = "text")]
     pub(crate) format: Format,
 }

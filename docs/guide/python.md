@@ -15,25 +15,13 @@ python -m llevant view model.mcnp                      # the viewer, from the wh
 `python -m llevant view` is the way to run the viewer where only Python packages can
 be installed.
 
-From a checkout, into the active virtual environment:
-
-```sh
-cd crates/llevant-py && maturin develop --release
-```
-
-A Windows wheel can be built on Linux. Once, run
-`rustup target add x86_64-pc-windows-msvc` and `cargo install cargo-xwin`; then:
-
-```sh
-cd crates/llevant-py
-rm -rf python/llevant/__pycache__                   # else it ends up in the wheel
-maturin build --release --target x86_64-pc-windows-msvc -i python3.12 -o ../../untracked/dist
-```
+Other ways to install, and what your computer needs: [Install](../install.md).
+Building the module from source: [contributing](../CONTRIBUTING.md).
 
 ## Use
 
-[`crates/llevant-py/examples/tour.py`](../../crates/llevant-py/examples/tour.py) walks
-through the whole API. Run it as a script (`python tour.py model.i out_dir`), or open it
+[`tour.py`](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-py/examples/tour.py)
+walks through the whole API. Run it as a script (`python tour.py model.i out_dir`), or open it
 as a notebook: VS Code and PyCharm run its `# %%` cells, and
 `jupytext --to notebook tour.py` makes an `.ipynb`.
 
@@ -75,6 +63,7 @@ llevant.view("model.mcnp")              # the viewer; returns when its window cl
 - **Errors.** `OSError` for files, `ValueError` for bad arguments, and
   `LlevantError` for other failures (the GPU).
 
-Type stubs ship with the module (`_llevant.pyi`, checked by `mypy.stubtest` in CI), with
-a docstring for every function, method and property: units, MCNP numbers or indices,
-and what `None` or `-1` means.
+Every function, method and property is described in the
+[Python API reference](../reference/python-api.md): units, MCNP numbers or indices,
+and what `None` or `-1` means. The same text ships with the module as type stubs
+(`_llevant.pyi`), so editors show it as you type.

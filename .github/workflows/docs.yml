@@ -1,0 +1,48 @@
+name: Docs
+
+# The documentation site (zensical.toml, docs/): built on every pull request that
+# touches it, so that broken links fail before merging; built and published to
+# GitHub Pages from main. Pages must be set once to "GitHub Actions" (repository
+# Settings, Pages, Source).
+
+on:
+  pull_request:
+    paths: ["docs/**", "zensical.toml", "CHANGELOG.md", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
+  push:
+    branches: [main]
+    paths: ["docs/**", "zensical.toml", "CHANGELOG.md", "crates/llevant-py/python/**", ".github/workflows/docs.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r docs/requirements.txt
+      - run: zensical build --strict
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
