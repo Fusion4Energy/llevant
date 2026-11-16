@@ -27,8 +27,9 @@ impl Gpu {
     pub fn new() -> Result<Gpu> {
         // Vulkan or Metal unless `WGPU_BACKEND` says otherwise: left to
         // choose, wgpu now and then takes the D3D12 adapter (when several
-        // threads look at once), whose shader compiler (FXC) cannot unroll
-        // the renderer's loops. Every backend if neither has an adapter.
+        // threads look at once). Every backend if neither has an adapter:
+        // D3D12 then compiles with DXC, linked in (`static-dxc` in
+        // Cargo.toml), as the system's FXC cannot compile the renderer's loops.
         let request = |backends: Option<wgpu::Backends>| {
             let mut desc = wgpu::InstanceDescriptor::new_without_display_handle_from_env();
             if let Some(b) = backends {

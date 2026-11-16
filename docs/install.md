@@ -71,6 +71,10 @@ cargo install llevant-cli --features gpu,viewer   # `llevant`, with `render --gp
 cargo install llevant-viewer                      # `llevant-viewer`
 ```
 
+On Windows, the GPU renderer and the viewer need Visual Studio 2022 17.11 or later (its
+C++ build tools), and the build downloads Microsoft's DirectX shader compiler (DXC) from
+GitHub once.
+
 On Linux, the viewer needs some system libraries to build. On Debian or Ubuntu:
 
 ```sh

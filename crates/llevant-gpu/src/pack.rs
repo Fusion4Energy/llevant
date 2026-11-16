@@ -483,6 +483,10 @@ impl GpuModel {
             source.hash(&mut h);
             h.finish()
         };
+        // A shader the driver cannot compile is an error, not a panic (wgpu's
+        // default for uncaptured errors): D3D12's old compiler (FXC) gives up
+        // on the renderer's loops, for one.
+        let scope = device.push_error_scope(wgpu::ErrorFilter::Validation);
         let module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("llevant-gpu"),
             source: wgpu::ShaderSource::Wgsl(source.into()),
@@ -535,6 +539,11 @@ impl GpuModel {
         let debug = pipeline("trace_rays", &[("DEBUG_STEPS", 1.0)]);
         let stats = pipeline("render", &[("STATS", 1.0)]);
         let plan = pipeline("plan", &[]);
+        if let Some(e) = pollster::block_on(scope.pop()) {
+            return Err(Error::Gpu(format!(
+                "the GPU cannot compile the renderer: {e}"
+            )));
+        }
         Ok(GpuModel {
             n_cells: e.cells.len(),
             n_units: e.units.len(),

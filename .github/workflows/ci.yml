@@ -60,6 +60,19 @@ jobs:
           WGPU_BACKEND: vulkan
         run: cargo test --release -p llevant-gpu -p llevant-viewer
 
+  # The GPU renderer on D3D12 with WARP, Windows' software adapter: what a
+  # Windows machine without a Vulkan driver uses, and where the shader compiler
+  # (DXC, linked in; FXC cannot compile the renderer) matters.
+  gpu-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - env:
+          WGPU_BACKEND: dx12
+        run: cargo test --release -p llevant-gpu
+
   python:
     runs-on: ubuntu-latest
     steps:

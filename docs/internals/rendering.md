@@ -489,7 +489,7 @@ Render options match the CPU's `Model::render`: hidden cells and universes and v
 through `Visibility`'s cell flags, colour modes, orthographic cameras, and the
 camera's cut (up to 8 regions of 16 planes in all, the eye's distance from each
 plane worked out in f64; the shader walks the kept parts as `Cutaway::kept`, with
-no local arrays (FXC unrolls loops over them), recomputing each region's interval
+no local arrays (FXC, D3D12's old compiler, unrolls loops over them), recomputing each region's interval
 along the ray; a hit at the start of a part takes the cut face's normal). Not on the GPU:
 `Visibility::gaps` and `problems` (a gap or problem always stops a ray where it steps,
 and is never seen where it jumps; the CPU can hide them only because `first_hits`

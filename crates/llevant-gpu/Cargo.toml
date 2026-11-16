@@ -19,6 +19,12 @@ llevant-render.workspace = true
 pollster = "0.4"
 wgpu = "30.0.1"
 
+# D3D12 compiles the shaders with DXC, linked in, not with the system's FXC, which
+# cannot compile the renderer's loops (Windows without a Vulkan driver: virtual
+# machines, remote desktops, CI). DXC is not available on Windows on ARM.
+[target.'cfg(all(windows, target_env = "msvc", not(target_arch = "aarch64")))'.dependencies]
+wgpu = { version = "30.0.1", features = ["static-dxc"] }
+
 [lints]
 workspace = true
 
