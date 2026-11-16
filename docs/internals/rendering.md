@@ -566,7 +566,7 @@ Not done yet: overlays of version differences.
 
 `crates/llevant-viewer` (2026-10-10; usage and the view file in
 [`reference/viewer.md`](../reference/viewer.md); embedding, effects and how the
-application is put together in its [README](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-viewer/README.md)):
+application is put together in its [README](https://github.com/Fusion4Energy/llevant/blob/main/crates/llevant-viewer/README.md)):
 an egui/eframe 0.36 desktop app on wgpu 30 (as `llevant-gpu`): the 3D view and a 2D
 slice side by side, tools (select, pin, section, mesh), picking (exact, CPU), pins with banners,
 undo, visibility, clip plane, colouring, effects, a view state as JSON (`--state`,

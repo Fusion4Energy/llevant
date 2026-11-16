@@ -26,11 +26,11 @@ classifiers = [
 dependencies = ["numpy>=1.21"]
 
 [project.urls]
-Homepage = "https://github.com/AlvaroCubi/llevant"
-Documentation = "https://alvarocubi.github.io/llevant/"
-Source = "https://github.com/AlvaroCubi/llevant"
-Issues = "https://github.com/AlvaroCubi/llevant/issues"
-Changelog = "https://github.com/AlvaroCubi/llevant/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Fusion4Energy/llevant"
+Documentation = "https://fusion4energy.github.io/llevant/"
+Source = "https://github.com/Fusion4Energy/llevant"
+Issues = "https://github.com/Fusion4Energy/llevant/issues"
+Changelog = "https://github.com/Fusion4Energy/llevant/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 polars = ["polars>=1.0"]

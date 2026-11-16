@@ -29,7 +29,7 @@ the other crates are in [`architecture.md`](../architecture.md); numbers in
 
 Everything is stored as flat arrays indexed by integers (no pointers, no per-object
 allocations): compact at 10⁶ surfaces, cache-friendly, and exportable as it is to the
-GPU renderer ([`export`](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant/src/export.rs)).
+GPU renderer ([`export`](https://github.com/Fusion4Energy/llevant/blob/main/crates/llevant/src/export.rs)).
 
 ## Input
 

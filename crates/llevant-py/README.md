@@ -13,7 +13,7 @@ It is checked point by point against MCNP 6.2. The Python module is built on the
 Rust engine of the same name: models are compiled once (and cached on disk), then
 queried in numpy batches.
 
-![The viewer: a reactor core cut open in 3D, beside an exact slice through its fuel pins](https://raw.githubusercontent.com/AlvaroCubi/llevant/main/docs/img/viewer.png)
+![The viewer: a reactor core cut open in 3D, beside an exact slice through its fuel pins](https://raw.githubusercontent.com/Fusion4Energy/llevant/main/docs/img/viewer.png)
 
 ## Install
 
@@ -51,14 +51,14 @@ python -m llevant view model.mcnp
 
 ## Documentation
 
-**<https://alvarocubi.github.io/llevant/>**:
+**<https://fusion4energy.github.io/llevant/>**:
 
-- [Install](https://alvarocubi.github.io/llevant/install/) and
-  [getting started](https://alvarocubi.github.io/llevant/getting-started/) on an example model
-- [How do I…?](https://alvarocubi.github.io/llevant/how-to/): gaps and overlaps, volumes,
+- [Install](https://fusion4energy.github.io/llevant/install/) and
+  [getting started](https://fusion4energy.github.io/llevant/getting-started/) on an example model
+- [How do I…?](https://fusion4energy.github.io/llevant/how-to/): gaps and overlaps, volumes,
   tallies, comparing models
-- [Python guide](https://alvarocubi.github.io/llevant/guide/python/) and
-  [API reference](https://alvarocubi.github.io/llevant/reference/python-api/)
-- [Source, issues and changelog](https://github.com/AlvaroCubi/llevant)
+- [Python guide](https://fusion4energy.github.io/llevant/guide/python/) and
+  [API reference](https://fusion4energy.github.io/llevant/reference/python-api/)
+- [Source, issues and changelog](https://github.com/Fusion4Energy/llevant)
 
 Licence: EUPL-1.2.

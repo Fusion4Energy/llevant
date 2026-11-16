@@ -20,7 +20,7 @@ Building the module from source: [contributing](../CONTRIBUTING.md).
 
 ## Use
 
-[`tour.py`](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-py/examples/tour.py)
+[`tour.py`](https://github.com/Fusion4Energy/llevant/blob/main/crates/llevant-py/examples/tour.py)
 walks through the whole API. Run it as a script (`python tour.py model.i out_dir`), or open it
 as a notebook: VS Code and PyCharm run its `# %%` cells, and
 `jupytext --to notebook tour.py` makes an `.ipynb`.

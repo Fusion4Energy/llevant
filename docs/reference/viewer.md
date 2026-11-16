@@ -557,7 +557,7 @@ lattice, may count. A rule with `shown` is frozen when it selects, hides, isolat
 ghosts or is saved (under the name given, by default the rule as typed): it becomes the list of the cells it gave (`c …`), so the selection does not
 change as the view does; Find lists its cells anew as the view changes.
 
-[`explore.view.json`](https://github.com/AlvaroCubi/llevant/blob/main/docs/examples/views/explore.view.json)
+[`explore.view.json`](https://github.com/Fusion4Energy/llevant/blob/main/docs/examples/views/explore.view.json)
 is the view of the screenshot above, on `docs/examples/core.i`; the same folder has
 the views of the other screenshots.
 

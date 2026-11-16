@@ -46,7 +46,7 @@ instead. For data frames, also `pip install pandas` (or `polars`).
 
 ## Download the programs
 
-Each [release on GitHub](https://github.com/AlvaroCubi/llevant/releases) has a zip
+Each [release on GitHub](https://github.com/Fusion4Energy/llevant/releases) has a zip
 (Windows) and a tar.gz (Linux) with two programs, nothing to install:
 
 - `llevant`: the command line;

@@ -5,10 +5,10 @@
 <h1 align="center">llevant</h1>
 
 <p align="center">
-  <a href="https://github.com/AlvaroCubi/llevant/actions/workflows/ci.yml"><img src="https://github.com/AlvaroCubi/llevant/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/Fusion4Energy/llevant/actions/workflows/ci.yml"><img src="https://github.com/Fusion4Energy/llevant/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://pypi.org/project/llevant/"><img src="https://img.shields.io/pypi/v/llevant" alt="PyPI"></a>
   <a href="https://crates.io/crates/llevant"><img src="https://img.shields.io/crates/v/llevant" alt="crates.io"></a>
-  <a href="https://alvarocubi.github.io/llevant/"><img src="https://img.shields.io/badge/docs-alvarocubi.github.io%2Fllevant-blue" alt="Documentation"></a>
+  <a href="https://fusion4energy.github.io/llevant/"><img src="https://img.shields.io/badge/docs-fusion4energy.github.io%2Fllevant-blue" alt="Documentation"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-blue" alt="License: EUPL-1.2"></a>
 </p>
 
@@ -24,7 +24,7 @@ and a Python module, on a Rust engine. llevant answers:
 It reads the MCNP input (through [migjorn](https://crates.io/crates/migjorn)), with
 every surface and macrobody, universes at any depth, lattices and transforms.
 
-**Documentation: <https://alvarocubi.github.io/llevant/>**: install, a ten-minute
+**Documentation: <https://fusion4energy.github.io/llevant/>**: install, a ten-minute
 tour, how-to guides and references.
 
 ![The viewer: a reactor core cut open in 3D](docs/img/viewer.png)
@@ -41,15 +41,15 @@ The models are in [`docs/examples`](docs/examples).
 pip install llevant          # Python 3.9+: the module, the `llevant` command and the viewer
 ```
 
-Windows and Linux (x86-64). The [releases](https://github.com/AlvaroCubi/llevant/releases)
+Windows and Linux (x86-64). The [releases](https://github.com/Fusion4Energy/llevant/releases)
 also have the `llevant` and `llevant-viewer` programs to download, and
 `cargo install llevant-cli --features gpu,viewer` builds them from source. Details,
-and what your computer needs: [Install](https://alvarocubi.github.io/llevant/install/).
+and what your computer needs: [Install](https://fusion4energy.github.io/llevant/install/).
 
 ## Try it
 
 [`docs/examples/cask.i`](docs/examples/cask.i) is a small model to try (a cask of fuel
-pins on a concrete floor); [Getting started](https://alvarocubi.github.io/llevant/getting-started/)
+pins on a concrete floor); [Getting started](https://fusion4energy.github.io/llevant/getting-started/)
 walks through it.
 
 ```sh
@@ -108,7 +108,7 @@ On a 425 k-cell fusion reactor model, on a 16-thread laptop
 | Python: models kept in memory, numpy batch queries, inline images, the viewer | `python -m llevant` | `crates/llevant-py` |
 
 What MCNP input is read, and what is not:
-[Supported input](https://alvarocubi.github.io/llevant/reference/supported-input/).
+[Supported input](https://fusion4energy.github.io/llevant/reference/supported-input/).
 
 ## Library
 

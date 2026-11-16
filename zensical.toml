@@ -1,4 +1,4 @@
-# The documentation site (https://alvarocubi.github.io/llevant/), built from docs/
+# The documentation site (https://fusion4energy.github.io/llevant/), built from docs/
 # by Zensical and published by .github/workflows/docs.yml.
 #
 #   uvx --with-requirements docs/requirements.txt zensical serve   # http://localhost:8000
@@ -10,9 +10,9 @@
 [project]
 site_name = "llevant"
 site_description = "Fast, exact geometry queries on MCNP models: a viewer, a command line and a Python module"
-site_url = "https://alvarocubi.github.io/llevant/"
-repo_url = "https://github.com/AlvaroCubi/llevant"
-repo_name = "AlvaroCubi/llevant"
+site_url = "https://fusion4energy.github.io/llevant/"
+repo_url = "https://github.com/Fusion4Energy/llevant"
+repo_name = "Fusion4Energy/llevant"
 edit_uri = "edit/main/docs/"
 docs_dir = "docs"
 site_dir = "site"

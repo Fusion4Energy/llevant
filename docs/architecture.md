@@ -213,7 +213,7 @@ D1SUNED cell-under-voxel readers) come from crates.io. The tally files the tests
 - **Viewer** (`llevant-viewer`): the 3D view and an exact slice side by side, with
   tools, rules, undo, fields, FMESH layout and analyses as background tasks.
   Its use in [`reference/viewer.md`](reference/viewer.md); embedding and the application's
-  structure in [its README](https://github.com/AlvaroCubi/llevant/blob/main/crates/llevant-viewer/README.md); `internals/rendering.md`,
+  structure in [its README](https://github.com/Fusion4Energy/llevant/blob/main/crates/llevant-viewer/README.md); `internals/rendering.md`,
   "The viewer".
 
 ## Testing

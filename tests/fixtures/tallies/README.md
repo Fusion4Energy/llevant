@@ -2,7 +2,7 @@
 
 MCNP output used by the field tests (`llevant-scene/tests/tallies.rs`, the CLI,
 viewer and Python tests), copied from
-[aci-tallies](https://github.com/AlvaroCubi/aci-tallies)' `tests/fixtures` (v0.1.0),
+[aci-tallies](https://github.com/Fusion4Energy/aci-tallies)' `tests/fixtures` (v0.1.0),
 which reads them and has the full set:
 
 - `pencil_beam_input.mcnp`, `.msht`: a pencil beam through FMESH tallies (`TR=` included),

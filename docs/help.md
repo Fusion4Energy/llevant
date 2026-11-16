@@ -95,7 +95,7 @@ refine every cell to 0.1 %.
 
 ## Reporting a problem
 
-Open an issue on [GitHub](https://github.com/AlvaroCubi/llevant/issues) with:
+Open an issue on [GitHub](https://github.com/Fusion4Energy/llevant/issues) with:
 
 - what you ran and what you expected;
 - the output of `llevant --version` and `llevant info model.i`;

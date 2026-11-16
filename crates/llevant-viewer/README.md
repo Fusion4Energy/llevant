@@ -1,10 +1,10 @@
 # llevant-viewer
 
-Interactive viewer of MCNP models on [llevant](https://github.com/AlvaroCubi/llevant):
+Interactive viewer of MCNP models on [llevant](https://github.com/Fusion4Energy/llevant):
 a 3D view and an exact 2D slice side by side. A desktop app (`llevant-viewer`) and a
 library of egui widgets other Rust programs can embed.
 
-![viewer](https://raw.githubusercontent.com/AlvaroCubi/llevant/main/docs/img/viewer.png)
+![viewer](https://raw.githubusercontent.com/Fusion4Energy/llevant/main/docs/img/viewer.png)
 
 ```sh
 cargo install llevant-viewer                      # or --path crates/llevant-viewer in a checkout
@@ -13,8 +13,8 @@ llevant-viewer model.mcnp --state view.json       # open at a saved view
 llevant-viewer model.mcnp --backend cpu           # auto (default), gpu or cpu
 ```
 
-Using the viewer: the [viewer guide](https://alvarocubi.github.io/llevant/guide/viewer/)
-and the [full reference](https://alvarocubi.github.io/llevant/reference/viewer/)
+Using the viewer: the [viewer guide](https://fusion4energy.github.io/llevant/guide/viewer/)
+and the [full reference](https://fusion4energy.github.io/llevant/reference/viewer/)
 (controls, panels, the view file), from `docs/guide/viewer.md` and
 `docs/reference/viewer.md`. This page is for Rust programs that embed the views, and
 for work on the viewer itself.

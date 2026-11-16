@@ -12,8 +12,8 @@ edition = "2021"
 rust-version = "1.93"
 license = "EUPL-1.2"
 authors = ["Alvaro Cubi"]
-repository = "https://github.com/AlvaroCubi/llevant"
-homepage = "https://alvarocubi.github.io/llevant/"
+repository = "https://github.com/Fusion4Energy/llevant"
+homepage = "https://fusion4energy.github.io/llevant/"
 readme = "README.md"
 
 [workspace.dependencies]

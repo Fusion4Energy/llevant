@@ -3,7 +3,7 @@
 ## Setup
 
 ```sh
-git clone https://github.com/AlvaroCubi/llevant
+git clone https://github.com/Fusion4Energy/llevant
 cd llevant && cargo test --release
 ```
 
@@ -125,7 +125,7 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 - Before pushing: `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D
   warnings`, `cargo test --release`. Changes to the GPU renderer or the viewer also run
   `cargo test --release -p llevant-gpu -p llevant-viewer`.
-- Add an entry to [`CHANGELOG.md`](https://github.com/AlvaroCubi/llevant/blob/main/CHANGELOG.md) under the top section ("Unreleased", or
+- Add an entry to [`CHANGELOG.md`](https://github.com/Fusion4Energy/llevant/blob/main/CHANGELOG.md) under the top section ("Unreleased", or
   the version being prepared) for anything a user of the command, the library, Python or
   the viewer would notice.
 
@@ -179,7 +179,7 @@ Set up once, in the repository settings and on the two registries:
   `publish-new` and `publish-update` scopes (once the crates exist, it can be narrowed to
   `llevant*` or replaced by crates.io trusted publishing);
 - on PyPI, a trusted publisher for the project `llevant` (a "pending publisher" before
-  the first release): owner `AlvaroCubi`, repository `llevant`, workflow `release.yml`,
+  the first release): owner `Fusion4Energy`, repository `llevant`, workflow `release.yml`,
   environment `release`. No PyPI token is stored.
 
 If the crates job fails part-way, the crates already uploaded stay published: publish the

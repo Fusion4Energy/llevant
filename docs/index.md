@@ -64,7 +64,7 @@ lattices and transforms ([the full list](reference/supported-input.md)).
 3. [How do I…?](how-to.md): the common jobs, step by step.
 
 Stuck? See [Help and FAQ](help.md), or
-[open an issue](https://github.com/AlvaroCubi/llevant/issues).
+[open an issue](https://github.com/Fusion4Energy/llevant/issues).
 
 ## How fast?
 
@@ -84,4 +84,4 @@ The details are in [Benchmarks](benchmarks.md).
 ## Licence
 
 llevant is free software under the
-[EUPL-1.2](https://github.com/AlvaroCubi/llevant/blob/main/LICENSE) licence.
+[EUPL-1.2](https://github.com/Fusion4Energy/llevant/blob/main/LICENSE) licence.
