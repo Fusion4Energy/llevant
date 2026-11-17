@@ -75,11 +75,11 @@ pub struct Loaded {
     /// What the views frame.
     pub region: Aabb,
     /// The model on a device of its own (see `view3d::backend`), or why
-    /// not ([`loading::GPU_NOT_YET`] when it is to be made later).
+    /// not (`loading::GPU_NOT_YET` when it is to be made later).
     pub gpu_model: Result<(Arc<Gpu>, Arc<GpuModel>), String>,
     /// How to make the GPU copy, when it was not made with the model: the
     /// document makes it in the background when its 3D view wants the GPU,
-    /// tracing on the CPU meanwhile ([`Document::poll_gpu`]).
+    /// tracing on the CPU meanwhile (`Document::poll_gpu`).
     pub gpu_later: Option<GpuLater>,
     /// The scene's visibility made ready for the backends.
     pub shown: Shown,
