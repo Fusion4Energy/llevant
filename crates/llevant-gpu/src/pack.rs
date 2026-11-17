@@ -550,8 +550,6 @@ impl GpuModel {
         };
         let trace_rays = pipeline("trace_rays", &[]);
         let render = pipeline("render", &[]);
-        let debug = pipeline("trace_rays", &[("DEBUG_STEPS", 1.0)]);
-        let stats = pipeline("render", &[("STATS", 1.0)]);
         let plan = pipeline("plan", &[]);
         if let Some(e) = pollster::block_on(scope.pop()) {
             return Err(Error::Gpu(format!(
@@ -579,8 +577,8 @@ impl GpuModel {
             layout,
             trace_rays,
             render,
-            debug,
-            stats,
+            debug: Default::default(),
+            stats: Default::default(),
             plan,
             module,
             shader_id,
@@ -625,7 +623,29 @@ impl GpuModel {
         };
         self.trace_rays = pipeline("trace_rays", &[]);
         self.render = pipeline("render", &[]);
-        self.stats = pipeline("render", &[("STATS", 1.0)]);
+        self.stats = pipeline("render", &[("STATS", 1.0)]).into();
+    }
+
+    /// A diagnostic variant of entry point `entry` with `constants`,
+    /// compiled now.
+    pub(crate) fn variant(
+        &self,
+        gpu: &Gpu,
+        entry: &str,
+        constants: &[(&str, f64)],
+    ) -> wgpu::ComputePipeline {
+        gpu.device
+            .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                label: Some(entry),
+                layout: Some(&self.pipeline_layout),
+                module: &self.module,
+                entry_point: Some(entry),
+                compilation_options: wgpu::PipelineCompilationOptions {
+                    constants,
+                    ..Default::default()
+                },
+                cache: None,
+            })
     }
 }
 

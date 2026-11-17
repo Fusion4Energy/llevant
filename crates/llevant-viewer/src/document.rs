@@ -20,6 +20,7 @@ use llevant_scene::index::{CellSet, ModelIndex};
 use llevant_scene::materials::Looks;
 use llevant_scene::query::Query;
 
+use crate::app::loading::{self, GpuLater, GpuPair};
 use crate::camera::Orbit;
 use crate::command::{Command, Edit, History};
 use crate::derive::{Derived, Deriver};
@@ -73,8 +74,13 @@ pub struct Loaded {
     pub universe: Option<i64>,
     /// What the views frame.
     pub region: Aabb,
-    /// The model on a device of its own (see `view3d::backend`).
+    /// The model on a device of its own (see `view3d::backend`), or why
+    /// not ([`loading::GPU_NOT_YET`] when it is to be made later).
     pub gpu_model: Result<(Arc<Gpu>, Arc<GpuModel>), String>,
+    /// How to make the GPU copy, when it was not made with the model: the
+    /// document makes it in the background when its 3D view wants the GPU,
+    /// tracing on the CPU meanwhile ([`Document::poll_gpu`]).
+    pub gpu_later: Option<GpuLater>,
     /// The scene's visibility made ready for the backends.
     pub shown: Shown,
     /// The scene's materials' looks.
@@ -197,7 +203,31 @@ pub struct Document {
     /// A surface being dragged (set by the application), for the
     /// inspector.
     pub drag: Option<DragInfo>,
+    /// The GPU copy of the model when it is made after the model is shown.
+    gpu: GpuPrep,
 }
+
+/// The GPU copy of a document's model made in the background
+/// ([`Loaded::gpu_later`]), and who the 3D view should be traced by once it
+/// lands.
+struct GpuPrep {
+    /// How to make it, until it is started.
+    later: Option<GpuLater>,
+    task: Option<Task<Result<GpuPair, String>>>,
+    /// Whether the user was told it is taking long.
+    slow_said: bool,
+    /// The copy landed: the 3D view switches to it once the deriver has
+    /// uploaded the visibility for it.
+    switch: bool,
+    /// What the 3D view is to be traced by (`software`: the window's
+    /// adapter is a CPU one).
+    choice: BackendChoice,
+    software: bool,
+}
+
+/// After this long making the GPU copy, the user is told the 3D view
+/// traces on the CPU meanwhile.
+const GPU_SLOW_SECONDS: f64 = 10.0;
 
 /// A surface being dragged, as the inspector shows it.
 #[derive(Clone, Debug, Default)]
@@ -543,8 +573,12 @@ impl Document {
         let scene = state.scene.clone();
         let vis = l.shown.vis.clone();
         let looks = l.looks;
-        let (backend, warning) =
-            backend_for(&l.model, &l.gpu_model, &l.shown, state.backend, software);
+        // Until the GPU copy is made, on the CPU, and nothing to say.
+        let choice = match l.gpu_later {
+            Some(_) => BackendChoice::Cpu,
+            None => state.backend,
+        };
+        let (backend, warning) = backend_for(&l.model, &l.gpu_model, &l.shown, choice, software);
         problems.extend(warning);
         let by: ColourBy = scene.colour_by.into();
         let view3d = View3d::with(
@@ -639,10 +673,103 @@ impl Document {
             views: state.views.clone(),
             input: None,
             field: None,
+            gpu: GpuPrep {
+                later: l.gpu_later,
+                task: None,
+                slow_said: false,
+                switch: false,
+                choice: state.backend,
+                software,
+            },
         };
         d.apply_effects();
         d.locate_pins();
+        d.start_gpu();
         d
+    }
+
+    /// Start making the GPU copy of the model in the background if the
+    /// 3D view wants it and it was left for later.
+    fn start_gpu(&mut self) {
+        if !self.gpu.choice.wants_gpu(self.gpu.software) || self.gpu.task.is_some() {
+            return;
+        }
+        let Some(later) = self.gpu.later.take() else {
+            return;
+        };
+        let (model, region) = (self.model.clone(), self.region);
+        let task = Task::run("gpu", Some(self.ctx.clone()), move |p| {
+            loading::upload(&model, &later.adapter, &region, later.fail_upload, Some(p))
+        });
+        self.gpu.slow_said = false;
+        self.gpu.task = Some(task);
+    }
+
+    /// Whether the GPU copy of the model is being made (the 3D view traces
+    /// on the CPU meanwhile), and the step it is at.
+    pub fn gpu_preparing(&self) -> Option<&'static str> {
+        self.gpu.task.as_ref().map(|t| t.progress().stage())
+    }
+
+    /// Take the GPU copy of the model once made: the deriver uploads the
+    /// visibility for it, then the 3D view switches to it (a drag of a
+    /// surface ended first). Said if it takes long, or fails.
+    fn poll_gpu(&mut self) {
+        if let Some(task) = &self.gpu.task {
+            let r = task.try_take().or_else(|| {
+                task.ended()
+                    .then(|| Err("the GPU renderer could not be prepared".to_string()))
+            });
+            match r {
+                None => {
+                    if !self.gpu.slow_said
+                        && task.started().elapsed().as_secs_f64() > GPU_SLOW_SECONDS
+                    {
+                        self.gpu.slow_said = true;
+                        self.messages.info(
+                            "the GPU renderer is still being prepared (the graphics driver \
+                             compiles it): the 3D view traces on the CPU meanwhile",
+                        );
+                    }
+                }
+                Some(Ok(pair)) => {
+                    let seconds = task.started().elapsed().as_secs_f64();
+                    log::debug!("GPU copy of the model made in {seconds:.2} s");
+                    self.gpu.task = None;
+                    self.gpu_model = Ok(pair.clone());
+                    self.deriver.set_gpu(pair);
+                    self.send_derive(false);
+                    self.gpu.switch = true;
+                }
+                Some(Err(e)) => {
+                    self.gpu.task = None;
+                    self.gpu_model = Err(e);
+                    if self.gpu.choice.wants_gpu(self.gpu.software) {
+                        let (b, warning) = backend_for(
+                            &self.model,
+                            &self.gpu_model,
+                            &self.shown,
+                            self.gpu.choice,
+                            self.gpu.software,
+                        );
+                        self.view3d.set_backend(b);
+                        self.messages.warn(warning.unwrap_or_default());
+                    }
+                }
+            }
+        }
+        // The visibility uploaded for the GPU: traced there from now.
+        if self.gpu.switch && self.shown.gpu.is_some() && self.drag.is_none() {
+            self.gpu.switch = false;
+            if self.gpu.choice.wants_gpu(self.gpu.software) {
+                let (choice, software) = (self.gpu.choice, self.gpu.software);
+                self.set_backend(choice, software);
+                if self.gpu.slow_said {
+                    self.messages
+                        .info("the GPU renderer is ready: the 3D view traces on the GPU");
+                }
+            }
+        }
     }
 
     /// Show the model of `l` in place of this one, keeping the work on the
@@ -1214,6 +1341,7 @@ impl Document {
         for d in self.deriver.poll() {
             self.commit(d);
         }
+        self.poll_gpu();
         if let Some((key, p)) = self.pointer.picker.latest() {
             // Still there: shown.
             if self.pointer.hover_key.as_ref() == Some(&key) {
@@ -1327,6 +1455,12 @@ impl Document {
             self.messages.warn("end the drag of the surface first");
             return;
         }
+        self.gpu.choice = choice;
+        self.gpu.software = software;
+        self.start_gpu();
+        // Being made (or its visibility uploaded): on the CPU until then.
+        let waiting = self.gpu.task.is_some() || self.gpu.switch;
+        let choice = if waiting { BackendChoice::Cpu } else { choice };
         let (b, warning) = backend_for(&self.model, &self.gpu_model, &self.shown, choice, software);
         self.view3d.set_backend(b);
         if let Some(w) = warning {
@@ -1675,11 +1809,7 @@ fn backend_for(
     choice: BackendChoice,
     software: bool,
 ) -> (Box<dyn TraceBackend>, Option<String>) {
-    let want_gpu = match choice {
-        BackendChoice::Auto => !software,
-        BackendChoice::Gpu => true,
-        BackendChoice::Cpu => false,
-    };
+    let want_gpu = choice.wants_gpu(software);
     let cpu = || CpuBackend::with(model.clone(), shown);
     match (gpu_model, want_gpu) {
         (Ok((gpu, gm)), true) => {

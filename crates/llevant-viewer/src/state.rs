@@ -742,6 +742,18 @@ pub enum BackendChoice {
     Cpu,
 }
 
+impl BackendChoice {
+    /// Whether the 3D view traces on the GPU with this choice (`software`:
+    /// the window's adapter is a CPU one, lavapipe).
+    pub fn wants_gpu(self, software: bool) -> bool {
+        match self {
+            BackendChoice::Auto => !software,
+            BackendChoice::Gpu => true,
+            BackendChoice::Cpu => false,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

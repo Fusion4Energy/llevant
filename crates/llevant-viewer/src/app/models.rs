@@ -33,15 +33,13 @@ impl ViewerApp {
         let window = self.gpu.clone();
         let scene = self.initial.scene.clone();
         let open = self.initial.open.clone();
-        let fail = self.dev.fail_gpu_upload();
-        let stage = self.dev.stage_always();
+        // A model opened from nothing is shown before its GPU copy is made
+        // (seconds whatever its size); a reload shows the model before
+        // meanwhile.
+        let how = self.how(self.reloading);
         let wake = Some(ctx.clone());
         // A load under way is dropped: cancelled.
         self.loading = Some(Task::run("load", wake.clone(), move |p| {
-            let how = loading::How {
-                fail_upload: fail,
-                stage_always: stage,
-            };
             loading::load(&path, &open, &adapter, &window, &scene, p, how, base)
         }));
         let path = self.path.clone();
@@ -75,6 +73,7 @@ impl ViewerApp {
     /// Open universe `u` of the open model on its own, in the background;
     /// the model stays open to go back to.
     pub(super) fn start_opening(&mut self, u: i64, ctx: &egui::Context) {
+        let how = self.how(true);
         let Some(doc) = &mut self.doc else { return };
         if self.opening.is_some() {
             return;
@@ -82,10 +81,9 @@ impl ViewerApp {
         let (model, adapter) = (doc.model.clone(), self.render_state.adapter.clone());
         let window = self.gpu.clone();
         let scene = opened_scene(&doc.scene);
-        let fail = self.dev.fail_gpu_upload();
         let labels = self.labels.clone();
         let task = Task::run("open", Some(ctx.clone()), move |_| {
-            loading::open_universe(&model, u, labels, &adapter, &window, &scene, fail)
+            loading::open_universe(&model, u, labels, &adapter, &window, &scene, how)
         });
         doc.messages.progress(format!("opening universe {u}…"));
         self.opening = Some((u, task));
@@ -181,6 +179,17 @@ impl ViewerApp {
             .chain(&self.doc)
             .filter_map(|d| d.universe)
             .collect()
+    }
+
+    /// How a load in the background goes: the GPU copy made with the model
+    /// when `shown_meanwhile` (another model is shown until it lands) and
+    /// the 3D view traces on the GPU.
+    pub(super) fn how(&self, shown_meanwhile: bool) -> loading::How {
+        loading::How {
+            fail_upload: self.dev.fail_gpu_upload(),
+            stage_always: self.dev.stage_always(),
+            gpu_now: shown_meanwhile && self.backend.wants_gpu(self.software()),
+        }
     }
 
     /// The window's adapter is a software one (lavapipe): `auto` traces on
@@ -380,11 +389,11 @@ impl ViewerApp {
             return;
         };
         let (adapter, window) = (self.render_state.adapter.clone(), self.gpu.clone());
-        let fail = self.dev.fail_gpu_upload();
+        let how = self.how(true);
         let s = scene.clone();
         let labels = self.labels.clone();
         let task = Task::run("octrees", Some(self.egui_ctx.clone()), move |p| {
-            loading::complete(staged, labels, &adapter, &window, &s, p, fail)
+            loading::complete(staged, labels, &adapter, &window, &s, p, how)
         });
         self.completing = Some((scene, task));
     }

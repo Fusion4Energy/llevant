@@ -1176,10 +1176,56 @@ fn a_model_too_large_for_the_gpu_is_traced_on_the_cpu() {
         a.document().is_some() || a.error().is_some()
     });
     assert!(h.state().error().is_none(), "{:?}", h.state().error());
+    // The model is shown before its GPU copy is made, which then fails.
+    step_until(&mut h, "the GPU copy to fail", |a| {
+        a.document().is_some_and(|d| d.gpu_preparing().is_none())
+    });
     let doc = h.state().document().unwrap();
     assert_eq!(doc.view3d.backend_name(), "CPU");
     let message = all_said(doc);
     assert!(message.contains("not enough GPU memory"), "{message}");
+    step_until(&mut h, "the 3D view to refine", |a| {
+        a.document().is_some_and(|d| !d.view3d.busy())
+    });
+    assert!(h.state().document().unwrap().view3d.stats().refined >= 1.0);
+}
+
+#[test]
+fn the_3d_view_moves_to_the_gpu_once_the_model_is_uploaded() {
+    let _one = serial();
+    if !adapter_available() {
+        eprintln!("skipped: no GPU adapter");
+        return;
+    }
+    let mut h = Harness::builder()
+        .with_size(egui::vec2(900.0, 600.0))
+        .wgpu_setup(llevant_viewer::app::wgpu_options().wgpu_setup)
+        .build_eframe(|cc| {
+            let mut app = ViewerApp::empty(cc).unwrap();
+            // The GPU asked for (on a software adapter auto traces on the
+            // CPU and makes no GPU copy).
+            app.send(
+                Command::Backend(llevant_viewer::state::BackendChoice::Gpu),
+                &cc.egui_ctx,
+            );
+            app.open_file(model("universes.i"), &cc.egui_ctx);
+            app
+        });
+    step_until(&mut h, "the model to load", |a| {
+        a.document().is_some() || a.error().is_some()
+    });
+    assert!(h.state().error().is_none(), "{:?}", h.state().error());
+    // Shown before its GPU copy is made: traced on the CPU meanwhile.
+    assert_eq!(h.state().document().unwrap().view3d.backend_name(), "CPU");
+    step_until(&mut h, "the 3D view to move to the GPU", |a| {
+        a.document()
+            .is_some_and(|d| d.view3d.backend_name() == "GPU")
+    });
+    let doc = h.state().document().unwrap();
+    assert!(doc.gpu_preparing().is_none());
+    assert!(doc.gpu_model.is_ok());
+    let said = all_said(doc);
+    assert!(!said.contains("unavailable"), "{said}");
     step_until(&mut h, "the 3D view to refine", |a| {
         a.document().is_some_and(|d| !d.view3d.busy())
     });

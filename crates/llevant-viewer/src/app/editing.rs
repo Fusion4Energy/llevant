@@ -383,8 +383,8 @@ impl ViewerApp {
                 .collect(),
         };
         let how = loading::How {
-            fail_upload: self.dev.fail_gpu_upload(),
             stage_always: false,
+            ..self.how(true)
         };
         let labels = self.labels.clone();
         self.loading = Some(Task::run("edit", Some(ctx.clone()), move |p| {

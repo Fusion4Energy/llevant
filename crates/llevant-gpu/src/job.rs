@@ -340,6 +340,9 @@ impl GpuModel {
         data.extend(ray.dir.iter().map(|&x| x as f32));
         data.push(ray.t_max as f32);
         let params = self.params(1);
+        let debug = self
+            .debug
+            .get_or_init(|| self.variant(gpu, "trace_rays", &[("DEBUG_STEPS", 1.0)]));
         let (words, _) = self
             .run_rays(
                 gpu,
@@ -347,7 +350,7 @@ impl GpuModel {
                 &data,
                 1,
                 1 + max,
-                &self.debug,
+                debug,
                 &self.current_vis().buffer,
                 false,
             )
@@ -376,7 +379,10 @@ impl GpuModel {
     /// and in place of the instance, the most words one locate step walked.
     #[doc(hidden)]
     pub fn render_stats(&self, gpu: &Gpu, camera: &Camera) -> Result<Frame> {
-        self.render_with(gpu, camera, &self.stats)
+        let stats = self
+            .stats
+            .get_or_init(|| self.variant(gpu, "render", &[("STATS", 1.0)]));
+        self.render_with(gpu, camera, stats)
     }
 
     /// A job tracing `blocks` of `camera`'s image (8 × 8 pixels each, in

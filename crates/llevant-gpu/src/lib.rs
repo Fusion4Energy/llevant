@@ -83,8 +83,11 @@ pub struct GpuModel {
     layout: wgpu::BindGroupLayout,
     trace_rays: wgpu::ComputePipeline,
     render: wgpu::ComputePipeline,
-    debug: wgpu::ComputePipeline,
-    stats: wgpu::ComputePipeline,
+    /// The diagnostic variants ([`GpuModel::debug_steps`],
+    /// [`GpuModel::render_stats`]): compiled when first used, not at upload
+    /// (each takes as long as `render` to compile, ~1.7 s on lavapipe).
+    debug: std::sync::OnceLock<wgpu::ComputePipeline>,
+    stats: std::sync::OnceLock<wgpu::ComputePipeline>,
     /// Sizes each slice of a [`Job`] (and refills it).
     plan: wgpu::ComputePipeline,
     /// Kept to rebuild the pipelines ([`GpuModel::set_constants`]).

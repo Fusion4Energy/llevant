@@ -70,9 +70,16 @@ wheel built on Linux (once: `rustup target add x86_64-pc-windows-msvc` and
 ```sh
 cd crates/llevant-py && maturin develop --release
 cd crates/llevant-py && rm -rf python/llevant/__pycache__ \
-  && maturin build --release --target x86_64-pc-windows-msvc -i python3.12 -o ../../untracked/dist
+  && XWIN_VERSION=17 XWIN_SDK_VERSION=10.0.22621 XWIN_INCLUDE_ATL=true \
+     maturin build --release --target x86_64-pc-windows-msvc -i python3.12 -o ../../untracked/dist
                                       # (without removing __pycache__ it ends up in the wheel)
 ```
+
+The DXC linked in on Windows (wgpu's `static-dxc`) needs ATL (`atls.lib`) and the VS 2022
+C++ library (`__std_find_trivial_*` and the like), which cargo-xwin's default VS 2019
+download lacks; its newest SDK (10.0.26100) has no x86_64 headers in xwin, hence the pin.
+cargo-xwin downloads once into `~/.cache/cargo-xwin/xwin`: after changing these
+variables, remove that folder so that it downloads again.
 
 The documentation site (`zensical.toml`; published from `main` by
 `.github/workflows/docs.yml`):

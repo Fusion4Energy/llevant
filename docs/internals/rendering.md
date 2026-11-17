@@ -665,7 +665,14 @@ every pixel is a ray.
   opening a universe, reading a field, the analyses, the Statistics numbers): a
   `Progress` to show and cancel, values on a channel polled once a frame, the
   window woken when one lands; dropping a task cancels it, so a new one of a kind
-  stops the one before. Hover picks run on a latest-wins worker
+  stops the one before. A model opened from nothing is shown before its GPU copy
+  is made (`app::loading::How::gpu_now`; seconds of shader compiling whatever the
+  model): the document makes it as a task when its 3D view wants the GPU
+  (`Document::poll_gpu`), traces on the CPU meanwhile, hands the copy to the deriver
+  (`Deriver::set_gpu`, which uploads the visibility for it), then switches. Devices
+  are made one at a time (`loading::UPLOADING`: several at once can hang Vulkan).
+  The renderer's diagnostic variants (`debug_steps`, `render_stats`) compile on
+  first use. Hover picks run on a latest-wins worker
   (`tasks::Latest`), the 3D view's pipelines and palette are made on the loading
   thread (`view3d::Prepared3d`), and the slice composes its image on a pool of
   the UI's own. A surface dragged in the inspector moves a `llevant::draft::Draft` on a

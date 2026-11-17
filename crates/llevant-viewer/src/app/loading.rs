@@ -1,12 +1,18 @@
 //! Opening a model in the background: compile it (or take one of its
 //! universes on its own), measure what to frame, upload it to a GPU device
-//! of its own.
+//! of its own: then ([`How::gpu_now`]), or later, while the model is shown
+//! ([`upload`], which the document runs when the 3D view wants the GPU).
+//!
+//! The GPU copy takes seconds whatever the model's size (the driver
+//! compiles the renderer's shader: ~3.5 s on lavapipe, more on some laptop
+//! drivers), so a model opened from the start screen does not wait for it:
+//! its 3D view traces on the CPU until the GPU's copy lands.
 
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
-use llevant::{Changed, Cut, GridMode, Model, Options, Scope, Visibility};
+use llevant::{Aabb, Changed, Cut, GridMode, Model, Options, Progress, Scope, Visibility};
 use llevant_gpu::{Gpu, GpuModel};
 use llevant_scene::index::ModelIndex;
 use llevant_scene::labels::Labels;
@@ -40,13 +46,71 @@ const COMPLETE_FIRST: f64 = 0.25;
 /// octrees take less than a second or two, less than a second upload.
 const COMPLETE_BELOW_CELLS: usize = 50_000;
 
-/// How a load goes (the viewer's [`DevOptions`](super::devtools::DevOptions)).
+/// How a load goes (the viewer's [`DevOptions`](super::devtools::DevOptions),
+/// and whether the GPU copy is made with the model).
 #[derive(Clone, Copy, Debug, Default)]
 pub struct How {
     /// Fail the GPU upload, as when the model does not fit.
     pub fail_upload: bool,
     /// Show the model staged however small it is.
     pub stage_always: bool,
+    /// Upload the model to the GPU before it is shown: when a model is
+    /// shown meanwhile (a reload, an edit, a universe opened, the octrees
+    /// built) and the 3D view traces on the GPU. Otherwise
+    /// [`Loaded::gpu_later`] says how to upload it later.
+    pub gpu_now: bool,
+}
+
+/// The model on a device of its own.
+pub type GpuPair = (Arc<Gpu>, Arc<GpuModel>);
+
+/// What uploading a model later ([`upload`]) needs.
+#[derive(Clone)]
+pub struct GpuLater {
+    pub adapter: wgpu::Adapter,
+    pub fail_upload: bool,
+}
+
+/// One GPU device made and a model uploaded at a time: devices made at
+/// once on several threads (a model's copy made in the background while a
+/// reload makes another) can hang the Vulkan driver.
+static UPLOADING: Mutex<()> = Mutex::new(());
+
+/// `model` on a device of its own made from `adapter`, the renderer
+/// compiled and run once on a tiny image of `region` (so that a driver that
+/// compiles on first use does it here, not in the first refinement), each
+/// step named in `progress`. `fail_upload`: fail as when the model does
+/// not fit (for tests).
+pub fn upload(
+    model: &Model,
+    adapter: &wgpu::Adapter,
+    region: &Aabb,
+    fail_upload: bool,
+    progress: Option<&Progress>,
+) -> Result<GpuPair, String> {
+    let stage = |s| {
+        if let Some(p) = progress {
+            p.set_stage(s);
+        }
+    };
+    let start = Instant::now();
+    stage("waiting for the GPU");
+    let _one = UPLOADING.lock().unwrap_or_else(|e| e.into_inner());
+    stage("opening the GPU");
+    let gpu = Gpu::from_adapter(adapter, crate::view3d::backend::TIMESTAMPS)
+        .map_err(|e| e.to_string())?;
+    if fail_upload {
+        return Err("not enough GPU memory for the model (DevOptions::fail_gpu_upload)".into());
+    }
+    stage("compiling the GPU renderer");
+    let mut gm = GpuModel::upload(&gpu, model).map_err(|e| e.to_string())?;
+    crate::view3d::backend::beside_window(&mut gm);
+    log_step("upload", start);
+    stage("a first GPU image");
+    gm.render(&gpu, &llevant::Camera::fit(region, [1.0, 1.0, -0.5], 8, 8))
+        .map_err(|e| e.to_string())?;
+    log_step("shader", start);
+    Ok((Arc::new(gpu), Arc::new(gm)))
 }
 
 /// What a load in the background made.
@@ -175,7 +239,8 @@ pub fn load_edit(
                 window,
                 &s,
                 start,
-                how.fail_upload,
+                how,
+                Some(progress),
             )
         })
         .collect::<Result<_, _>>()?;
@@ -189,6 +254,9 @@ pub fn load_edit(
         labels: new_labels,
     })
 }
+
+/// [`Loaded::gpu_model`] until the model is uploaded.
+pub const GPU_NOT_YET: &str = "the GPU renderer is not ready yet";
 
 /// At most this many cells changed for [`Load::changed_boxes`].
 const CHANGED_BOXES_MAX: usize = 20_000;
@@ -230,7 +298,6 @@ pub fn load(
     how: How,
     base: Option<Arc<Model>>,
 ) -> Result<Load, String> {
-    let fail_upload = how.fail_upload;
     let start = Instant::now();
     let store = Store::from_env();
     let staged = store
@@ -277,7 +344,7 @@ pub fn load(
         .enumerate()
         .map(|(k, (u, m))| {
             let s = if k + 1 == n { scene } else { &default };
-            prepare(m, u, None, adapter, window, s, start, fail_upload)
+            prepare(m, u, None, adapter, window, s, start, how, Some(progress))
         })
         .collect::<Result<_, _>>()?;
     Ok(Load {
@@ -300,7 +367,7 @@ pub fn complete(
     window: &Arc<Gpu>,
     scene: &Scene,
     progress: &llevant::Progress,
-    fail_upload: bool,
+    how: How,
 ) -> Result<Loaded, String> {
     let start = Instant::now();
     // Built while the staged model is shown: below the views' work.
@@ -316,7 +383,8 @@ pub fn complete(
         window,
         scene,
         start,
-        fail_upload,
+        how,
+        Some(progress),
     )
 }
 
@@ -328,7 +396,7 @@ pub fn open_universe(
     adapter: &wgpu::Adapter,
     window: &Arc<Gpu>,
     scene: &Scene,
-    fail_upload: bool,
+    how: How,
 ) -> Result<Loaded, String> {
     let start = Instant::now();
     let sub = model
@@ -343,7 +411,8 @@ pub fn open_universe(
         window,
         &scene,
         start,
-        fail_upload,
+        how,
+        None,
     )
 }
 
@@ -356,8 +425,9 @@ pub fn known_to(mut s: Scene, m: &Model) -> Scene {
     s
 }
 
-/// Frame what `scene` shows of `model` and upload it to a device of its own
-/// (`fail_upload`: fail as when the model does not fit, for tests).
+/// Frame what `scene` shows of `model`, and upload it to a device of its
+/// own if `how` says so now ([`How::gpu_now`]), else leave how to upload
+/// it later in [`Loaded::gpu_later`]. Each step named in `progress`.
 #[allow(clippy::too_many_arguments)]
 fn prepare(
     model: Arc<Model>,
@@ -367,13 +437,21 @@ fn prepare(
     window: &Arc<Gpu>,
     scene: &Scene,
     start: Instant,
-    fail_upload: bool,
+    how: How,
+    progress: Option<&Progress>,
 ) -> Result<Loaded, String> {
+    let stage = |s| {
+        if let Some(p) = progress {
+            p.set_stage(s);
+        }
+    };
+    stage("indexing the cells");
     let index = Arc::new(ModelIndex::new(&model));
     if let Some(l) = labels {
         index.set_labels(&model, l.clone());
     }
     log_step("index", start);
+    stage("framing the view");
     let mut region = model.extent(Scope::Contents, 64);
     if region.is_empty() {
         region = model.extent(Scope::Problem, 64);
@@ -396,23 +474,19 @@ fn prepare(
         region = r;
     }
     log_step("framing", start);
-    let gpu_model = Gpu::from_adapter(adapter, crate::view3d::backend::TIMESTAMPS)
-        .and_then(|gpu| {
-            if fail_upload {
-                return Err(llevant::Error::Gpu(
-                    "not enough GPU memory for the model (DevOptions::fail_gpu_upload)".into(),
-                ));
-            }
-            let mut gm = GpuModel::upload(&gpu, &model)?;
-            crate::view3d::backend::beside_window(&mut gm);
-            log_step("upload", start);
-            // A tiny image now, so that the driver compiles the shader here
-            // rather than in the middle of the first refinement (~0.3 s).
-            gm.render(&gpu, &llevant::Camera::fit(&region, [1.0, 1.0, -0.5], 8, 8))?;
-            Ok((Arc::new(gpu), Arc::new(gm)))
-        })
-        .map_err(|e| e.to_string());
-    log_step("shader", start);
+    let (gpu_model, gpu_later) = if how.gpu_now {
+        (
+            upload(&model, adapter, &region, how.fail_upload, progress),
+            None,
+        )
+    } else {
+        let later = GpuLater {
+            adapter: adapter.clone(),
+            fail_upload: how.fail_upload,
+        };
+        (Err(GPU_NOT_YET.to_string()), Some(later))
+    };
+    stage("preparing the views");
     let seen = Arc::new(crate::seen::Seen::new(&model, &index, scene, &vis));
     // The visibility made ready for the backends here, not on the UI
     // thread.
@@ -432,6 +506,7 @@ fn prepare(
         universe,
         region,
         gpu_model,
+        gpu_later,
         shown,
         looks,
         seen,

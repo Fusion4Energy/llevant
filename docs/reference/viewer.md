@@ -473,6 +473,14 @@ changing colours or effects needs no new tracing.
 | `gpu` | the GPU | |
 | `cpu` | the CPU | no GPU, or exact pixels everywhere |
 
+A model opened from the start screen or the command line is shown before its GPU
+copy is made: the graphics driver compiles the renderer then, which takes seconds
+whatever the model's size (~4 s on lavapipe, more on some laptop drivers). Until then
+the 3D view traces on the CPU; it moves to the GPU by itself when the copy is ready,
+and says so if that took more than 10 s. With `cpu`, or `auto` on a software adapter,
+no GPU copy is made until the GPU is chosen. A reload, an edit or a universe opened
+makes the new model's GPU copy before it replaces the one shown.
+
 While the camera moves, the 3D view moves the hits it has to the camera every frame
 (reprojection), so the window follows the camera at its refresh rate however slowly
 previews come: on big models one GPU ray can take tens of milliseconds, whatever the

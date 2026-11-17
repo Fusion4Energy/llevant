@@ -36,6 +36,10 @@ pub struct Request {
     pub field: Option<Overlay>,
     /// The field's data changed though the scene did not (it was read).
     pub field_read: bool,
+    /// The model's GPU copy, made since the last request
+    /// ([`Deriver::set_gpu`]): visibilities are uploaded for it from this
+    /// request on, this one's included.
+    pub gpu: Option<(Arc<Gpu>, Arc<GpuModel>)>,
 }
 
 /// What changed for the views, made ready to swap in.
@@ -65,6 +69,8 @@ pub struct Deriver {
     rx: Receiver<Derived>,
     sent: u64,
     done: u64,
+    /// Given to the next request.
+    gpu: Option<(Arc<Gpu>, Arc<GpuModel>)>,
 }
 
 impl Deriver {
@@ -84,17 +90,24 @@ impl Deriver {
         std::thread::Builder::new()
             .name("llevant-derive".into())
             .spawn(move || {
-                let (mut last, mut looks) = (scene, looks);
+                let (mut last, mut looks, mut gpu) = (scene, looks, gpu);
                 // The field whose buffer was made last (held, so that its
                 // data's address names it).
                 let mut data: Option<Overlay> = None;
                 while let Ok(mut req) = requests.recv() {
                     let mut field_read = req.field_read;
-                    while let Ok(next) = requests.try_recv() {
+                    let mut new_gpu = req.gpu.take();
+                    while let Ok(mut next) = requests.try_recv() {
                         field_read |= next.field_read;
+                        new_gpu = next.gpu.take().or(new_gpu);
                         req = next;
                     }
                     req.field_read = field_read;
+                    // A new GPU copy: the visibility uploaded for it.
+                    let reupload = new_gpu.is_some();
+                    if new_gpu.is_some() {
+                        gpu = new_gpu;
+                    }
                     let d = derive(
                         &model,
                         &index,
@@ -103,6 +116,7 @@ impl Deriver {
                         &mut looks,
                         &mut data,
                         req,
+                        reupload,
                     );
                     if d.error.is_none() {
                         last = d.scene.clone();
@@ -119,7 +133,15 @@ impl Deriver {
             rx,
             sent: 0,
             done: 0,
+            gpu: None,
         }
+    }
+
+    /// Upload visibilities for `gpu` (the model's GPU copy, made after the
+    /// deriver started) from the next scene sent on; that one's visibility
+    /// is uploaded however little it changed.
+    pub fn set_gpu(&mut self, gpu: (Arc<Gpu>, Arc<GpuModel>)) {
+        self.gpu = Some(gpu);
     }
 
     /// Bring the views to `scene` (`vis` its visibility, `field` the field
@@ -138,6 +160,7 @@ impl Deriver {
             vis,
             field,
             field_read,
+            gpu: self.gpu.take(),
         });
     }
 
@@ -156,7 +179,10 @@ impl Deriver {
     }
 }
 
-/// What `req` changes since `last` (shown with `looks`, updated here).
+/// What `req` changes since `last` (shown with `looks`, updated here);
+/// `reupload`: its visibility is made again however little it changed (for
+/// a new GPU copy).
+#[allow(clippy::too_many_arguments)]
 fn derive(
     model: &Model,
     index: &ModelIndex,
@@ -165,9 +191,11 @@ fn derive(
     looks: &mut Arc<Looks>,
     data: &mut Option<Overlay>,
     req: Request,
+    reupload: bool,
 ) -> Derived {
     let mut changes = Changes::between(last, &req.scene);
     changes.field_source |= req.field_read;
+    changes.visibility |= reupload;
     let mut d = Derived {
         revision: req.revision,
         changes,

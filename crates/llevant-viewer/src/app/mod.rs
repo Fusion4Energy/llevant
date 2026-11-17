@@ -18,7 +18,7 @@ mod drag;
 mod editing;
 pub mod frame;
 mod input_edits;
-mod loading;
+pub(crate) mod loading;
 mod menu;
 mod models;
 mod setup;
