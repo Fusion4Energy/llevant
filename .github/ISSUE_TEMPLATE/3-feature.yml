@@ -1,0 +1,41 @@
+name: Feature request
+description: A job llevant does not do yet, or does badly.
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the need rather than the change you would make: the same need often
+        has a simpler answer, or one that already exists. What belongs in llevant, and
+        what belongs on top of it (Python, the CLI's JSON, view files):
+        [How to contribute](https://github.com/Fusion4Energy/llevant/blob/main/docs/CONTRIBUTING.md#what-belongs-in-llevant).
+        Code changes are made by the maintainers; please do not open a pull request
+        unless one is asked for in the issue.
+  - type: textarea
+    id: job
+    attributes:
+      label: The job
+      description: What you are trying to do, on what kind of model, and how often.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you do it today
+      description: >
+        With llevant, MCNP or other tools, and what is missing, wrong or too slow
+        about that.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Ideas (optional)
+      description: >
+        How it could look: a command, an option, a Python call, a viewer panel. A sketch
+        is enough.
+  - type: textarea
+    id: others
+    attributes:
+      label: Who else needs it (optional)
+      description: Other people, groups or workflows with the same need.
