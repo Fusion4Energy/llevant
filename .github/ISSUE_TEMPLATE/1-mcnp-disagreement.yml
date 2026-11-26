@@ -1,0 +1,46 @@
+name: Disagreement with MCNP
+description: llevant and MCNP give different answers on the same input.
+labels: ["mcnp-disagreement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        MCNP is the reference for what a geometry means, so these are the most valuable
+        reports. Models are often confidential: a few cells cut out of the model are
+        usually enough. Please do not attach anything you may not share publicly.
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: >
+        The smallest MCNP input that shows the difference (cells, surfaces and data
+        cards needed to run it). Paste it, or attach it as a .txt file.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: query
+    attributes:
+      label: What was asked
+      description: >
+        The point, line or cells concerned, and the llevant command or Python call you ran.
+      placeholder: llevant locate sub.i 10.5 0 -3
+    validations:
+      required: true
+  - type: textarea
+    id: mcnp
+    attributes:
+      label: What MCNP says
+      description: >
+        How you know (lost particles, a PTRAC or event log, a plot, a VOID run…), and
+        the MCNP version.
+    validations:
+      required: true
+  - type: textarea
+    id: llevant
+    attributes:
+      label: What llevant says
+      description: The output, and `llevant --version`.
+      render: text
+    validations:
+      required: true

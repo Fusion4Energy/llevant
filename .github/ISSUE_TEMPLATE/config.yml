@@ -1,0 +1,9 @@
+# Issues go through the forms (docs/CONTRIBUTING.md, "How to contribute").
+blank_issues_enabled: false
+contact_links:
+  - name: Help and FAQ
+    url: https://github.com/Fusion4Energy/llevant/blob/main/docs/help.md
+    about: Common questions, and how to use llevant from your own program.
+  - name: How to contribute
+    url: https://github.com/Fusion4Energy/llevant/blob/main/docs/CONTRIBUTING.md#how-to-contribute
+    about: Why llevant takes issues rather than pull requests, and what belongs in it.

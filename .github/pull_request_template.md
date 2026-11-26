@@ -1,3 +1,9 @@
+<!-- Pull requests come from the maintainers, or from someone a maintainer invited on an
+issue labelled `pr-welcome`; others are closed automatically. To propose a change, open
+an issue instead (docs/CONTRIBUTING.md, "How to contribute"). -->
+
+Issue: #
+
 ## What and why
 
 <!-- What changes for a user or a caller, and why. -->

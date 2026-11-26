@@ -1,5 +1,62 @@
 # Contributing to llevant
 
+## How to contribute
+
+llevant is open source, and open to ideas, but its code changes come from its
+maintainers. **Open an issue, not a pull request.** A pull request from anyone else is
+closed automatically, with a pointer back here, unless a maintainer asked for it.
+
+Why: what llevant is worth rests on three things: exact answers (the fast path equals
+brute force, boxes stay conservative, MCNP is the reference), speed on models of a
+million surfaces, and code small enough to reason about. Code is cheap to write now,
+with or without an agent; what is expensive is deciding whether a change belongs, how it
+fits the crates, and checking that it keeps every guarantee in
+[`contracts.md`](contracts.md). Each feature someone needs is reasonable on its own; a
+hundred of them, each designed separately, are how a tool like this gets slow, wrong
+in corners and hard to change. So the design of every change stays with the
+maintainers, and a good issue is the most useful thing you can give.
+
+What helps most:
+
+- **A disagreement with MCNP.** A small input where llevant and MCNP disagree on what is
+  at a point, along a line, or which cells are filled. Models are often confidential: a
+  few cells cut out of the model are usually enough, and `mcnp-oracle submodel` can cut
+  them. These become tests in `tools/mcnp-oracle/models`.
+- **A bug.** What you ran, what you expected, what happened, `llevant --version`.
+- **A slow case.** The command, the model's size (`llevant info model.i`), the time, and
+  what you expected.
+- **A feature request.** The job you are trying to do, and why the tool does not do it
+  today, rather than the change you would make: the same need often has a simpler
+  answer.
+
+The [issue forms](https://github.com/Fusion4Energy/llevant/issues/new/choose) ask for
+these.
+
+**Pull requests by invitation.** When an issue is accepted and a maintainer would like
+its reporter to write the change (a fix in a part they know well, say), the issue gets
+the label `pr-welcome`. A pull request whose description names that issue (`Fixes #123`)
+stays open and is reviewed as any other: [Changes](#changes) and [What a change must
+keep](#what-a-change-must-keep) below apply to it. Small fixes to the documentation
+(a typo, a broken link) are welcome as issues too; they are fixed quickly.
+
+**Credit.** A change made from your issue names you in its commit (`Reported-by:`) and
+in the release notes.
+
+**Forks are fine.** The licence is the EUPL-1.2: you may fork llevant and add what your
+own work needs, as long as what you distribute stays under it (or a compatible licence)
+with its source. If your fork does something others need, open an issue pointing at it.
+
+### What belongs in llevant
+
+The goals and non-goals are in [`architecture.md`](architecture.md#goals-and-non-goals).
+In short, a change belongs here when it is about MCNP geometry (reading it, querying it,
+checking it, showing it) and when many users of MCNP models would want it. Something
+only one workflow needs usually belongs on top of llevant, through its
+[Python API](guide/python.md), the [CLI's JSON](guide/cli.md#scripting-and-agents) or
+view files ([viewer reference](reference/viewer.md)); an issue saying what is missing
+from those is welcome. Transport, tallies computed by llevant, writing MCNP inputs and
+matching the CAD are out of scope.
+
 ## Setup
 
 ```sh
@@ -125,10 +182,15 @@ cargo run --release -p mcnp-oracle -- submodel big.mcnp sub.mcnp --keep 30
 
 ## Changes
 
+- Every change starts from an issue ([How to contribute](#how-to-contribute)); the pull
+  request names it.
 - Branch from `main`; one pull request per change, small enough to review in one sitting.
   `main` is always releasable: CI must be green before merging. `main` is protected:
   changes reach it through a pull request with the maintainer's approval (the code
   owner, `.github/CODEOWNERS`); only the maintainer may push to it directly.
+- Pull requests from people who are not collaborators are closed on opening by
+  `.github/workflows/pr-gate.yml`, unless their description names an issue labelled
+  `pr-welcome`. A maintainer can reopen one by hand; reopening does not run the gate.
 - Commit messages: a summary line in the imperative, under 72 characters, naming what
   changes for a user or a caller (`Trace lines in windows of doubling length`, not
   `Improvements`); a body when the reason is not obvious, with measurements when the

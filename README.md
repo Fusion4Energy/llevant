@@ -169,8 +169,12 @@ and [`docs/contracts.md`](docs/contracts.md) lists what each query guarantees.
 
 ## Develop
 
-[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) has the commands, the rules and how to
-check against MCNP.
+Bugs, disagreements with MCNP and feature requests are welcome as
+[issues](https://github.com/Fusion4Energy/llevant/issues/new/choose). Code changes are
+made by the maintainers, and pull requests are by invitation:
+[How to contribute](docs/CONTRIBUTING.md#how-to-contribute) explains why.
+[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) also has the commands, the rules and how
+to check against MCNP.
 
 ```sh
 cargo test --release                       # unit, MCNP golden, property and CLI tests
